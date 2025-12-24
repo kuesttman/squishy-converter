@@ -26,7 +26,7 @@ services:
       - squishy_transcodes:/transcodes
 
       # 📌 mounts do host (gclone + nvme) para o container enxergar a mídia
-      - /media/drive/primecine-drives:/media:rw
+      - /media/drive/primecine-drives:/media/in:rw
       - /mnt:/mnt:rw
 
     # 🎬 Hardware accel (Intel VAAPI/QSV)
