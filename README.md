@@ -23,34 +23,33 @@ O Squishy pode ser executado manualmente a partir da fonte, mas o método de ins
 
 1. Clone este repositório:
 ```bash
-git clone https://github.com/cleverdevil/squishy.git
-cd squishy
+git clone https://github.com/kuesttman/squishy-converter.git
+cd squishy-converter
 ```
-2. Modifique o docker-compose.yml:
-   - Descomente e edite as montagens de volume do caminho de mídia nos serviços Squishy e Jellyfin/Plex
-   - Descomente as configurações apropriadas de GPU/aceleração de hardware, se necessário
-   - Escolha Jellyfin ou Plex (comente o que você não usa)
+2. Modifique o `docker-compose.yaml` (se necessário):
+   - O arquivo já vem configurado para usar a imagem oficial do repositório: `ghcr.io/kuesttman/squishy-converter:main`.
+   - Ajuste os volumes para apontar para suas pastas de mídia.
+   - Ajuste as configurações de hardware se necessário.
 
 3. Inicie os contêineres:
 ```bash
-docker compose up --build
+docker compose up -d
 ```
 
 4. Acesse o Squishy:
 
-Abra seu navegador e navegue até `http://seu-host:5101`. O Squishy irá guiá-lo pelo resto do processo de configuração!
+Abra seu navegador e navegue até `http://seu-host:5101` (ou o domínio configurado no Traefik). O Squishy irá guiá-lo pelo resto do processo de configuração!
 
 ### Usando a Imagem Docker Pré-construída
 
-Uma imagem Docker pré-construída está disponível no GitHub Container Registry. Você pode baixá-la usando:
+A imagem Docker é construída e publicada automaticamente no GitHub Container Registry.
 
+Para puxar a última versão manualmente:
 ```bash
-docker pull ghcr.io/OWNER/REPO:latest
+docker pull ghcr.io/kuesttman/squishy-converter:main
 ```
 
-Substitua `OWNER` pelo seu nome de usuário do GitHub e `REPO` pelo nome do repositório.
-
-**Nota:** Se o seu repositório for privado, você pode precisar autenticar no GitHub Container Registry ou alterar as configurações de visibilidade do pacote no seu repositório GitHub na guia "Packages".
+**Nota:** Se o seu repositório for privado, você pode precisar autenticar no GitHub Container Registry.
 
 ### Aceleração de Hardware
 

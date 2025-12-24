@@ -1,7 +1,7 @@
 services:
   prime-squishy:
     # ✅ Use uma imagem pronta (recomendado)
-    image: prime-squishy:latest
+    image: ghcr.io/kuesttman/squishy-converter:main
 
     # 🔧 Se você NÃO tiver imagem publicada, descomente o build abaixo:
     # build:
@@ -21,9 +21,13 @@ services:
 
     # ✅ Volumes nomeados (sem bind mount)
     volumes:
+      # ✅ volumes Docker para dados do app
       - squishy_config:/config
-      - squishy_media:/media
       - squishy_transcodes:/transcodes
+
+      # 📌 mounts do host (gclone + nvme) para o container enxergar a mídia
+      - /media/drive/primecine-drives:/media:rw
+      - /mnt:/mnt:rw
 
     # 🎬 Hardware accel (Intel VAAPI/QSV)
     devices:
@@ -32,7 +36,7 @@ services:
 
     group_add:
       - video
-      - "105" # Render group GID (ajuste se seu host usar outro)
+      - "993" # Render group GID (ajuste se seu host usar outro)
 
     networks:
       - network_public
@@ -60,5 +64,4 @@ networks:
 
 volumes:
   squishy_config:
-  squishy_media:
   squishy_transcodes:
