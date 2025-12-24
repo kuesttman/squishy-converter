@@ -44,3 +44,6 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Disparar Webhook do Portainer
+        run: curl -i -X POST "https://dock.primecine.xyz/api/stacks/webhooks/04668b6a-9081-490f-8e88-b7a8f5b51d6f"
