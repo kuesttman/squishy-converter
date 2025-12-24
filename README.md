@@ -1,72 +1,59 @@
 <center><img src="https://raw.githubusercontent.com/cleverdevil/squishy/main/squishy/static/img/splash.png"></center>
 
-# Squishy: Media Transcoding Made Simple
+# Squishy: Transcodificação de Mídia Simplificada
 
-Digital packrats often have media libraries that are filled with high resolution
-movies and TV shows. When you are watching on the big screen in your home
-theater, you want the best possible quality in the form of Bluray rips and
-remuxes. That quality comes at a cost -- file size. 4K HDR remuxes are generally
-in the 30-100 GB range. When traveling, downloading media to your phone with
-such files results in long downloads and limited storage space. Enter Squishy,
-which makes transcoding and downloading your media simple by automating the
-on-demand transcoding process, compressing your large media files to much more
-reasonable sizes for watching movies and TV shows on smaller devices like phones
-and tablets.
+Acumuladores digitais muitas vezes têm bibliotecas de mídia repletas de filmes e programas de TV em alta resolução. Quando você está assistindo na tela grande do seu home theater, você quer a melhor qualidade possível na forma de rips e remuxes de Blu-ray. Essa qualidade tem um custo - o tamanho do arquivo. Remuxes 4K HDR geralmente estão na faixa de 30-100 GB. Ao viajar, baixar mídia para o seu telefone com esses arquivos resulta em downloads longos e espaço de armazenamento limitado. Entra o Squishy, que torna a transcodificação e o download de sua mídia simples, automatizando o processo de transcodificação sob demanda, comprimindo seus grandes arquivos de mídia para tamanhos muito mais razoáveis para assistir filmes e programas de TV em dispositivos menores, como telefones e tablets.
 
-## Features
+## Funcionalidades
 
-Squishy has a focused set of features designed to make the process of selecting,
-transcoding, and downloading your media as frictionless as possible:
+O Squishy possui um conjunto focado de funcionalidades projetadas para tornar o processo de seleção, transcodificação e download de sua mídia o mais simples possível:
 
-* Attractive web interface to browse your media and transcoded files, including
-  poster art.
-* Integration with Jellyfin and Plex media servers to quickly add your media
-  library to Squishy.
-* Flexible transcoding presets, giving you the ability to optimize for your use
-  case. Presets define a target resolution, codec, and quality. Squishy comes
-  with default presets, along with additional preset libraries for different
-  tradeoffs.
-* Customize and create your own presets to let you dial-in your personal preferences by
-  selecting custom resolutions, bitrates, and codecs.
-* Hardware acceleration support with automatic failover to software encoding when
-  hardware acceleration fails.
-* Direct download links for your transcoded media that work with any browser or
-  media player app.
+* Interface web atraente para navegar em sua mídia e arquivos transcodificados, incluindo arte de pôster.
+* Integração com servidores de mídia Jellyfin e Plex para adicionar rapidamente sua biblioteca de mídia ao Squishy.
+* Predefinições de transcodificação flexíveis, dando a você a capacidade de otimizar para seu caso de uso. As predefinições definem uma resolução, codec e qualidade de destino. O Squishy vem com predefinições padrão, juntamente com bibliotecas de predefinições adicionais para diferentes compensações.
+* Personalize e crie suas próprias predefinições para permitir que você ajuste suas preferências pessoais selecionando resoluções, taxas de bits e codecs personalizados.
+* Suporte a aceleração de hardware com failover automático para codificação por software quando a aceleração de hardware falha.
+* Links de download direto para sua mídia transcodificada que funcionam com qualquer navegador ou aplicativo reprodutor de mídia.
 
-## Installation
+## Instalação
 
-Squishy can be run manually from source, but the recommended installation method
-is to run Squishy as a Docker Container. The repository includes a
-`docker-compose.yml` file for your convenience.
+O Squishy pode ser executado manualmente a partir da fonte, mas o método de instalação recomendado é executar o Squishy como um contêiner Docker. O repositório inclui um arquivo `docker-compose.yml` para sua conveniência.
 
-### Running with Docker
+### Executando com Docker
 
-1. Clone this repository:
+1. Clone este repositório:
 ```bash
 git clone https://github.com/cleverdevil/squishy.git
 cd squishy
 ```
-2. Modify docker-compose.yml:
-   - Uncomment and edit the media path volume mounts in both Squishy and Jellyfin/Plex services
-   - Uncomment the appropriate GPU/hardware acceleration settings if needed
-   - Choose either Jellyfin or Plex (comment out the one you don't use)
+2. Modifique o docker-compose.yml:
+   - Descomente e edite as montagens de volume do caminho de mídia nos serviços Squishy e Jellyfin/Plex
+   - Descomente as configurações apropriadas de GPU/aceleração de hardware, se necessário
+   - Escolha Jellyfin ou Plex (comente o que você não usa)
 
-3. Start the containers:
+3. Inicie os contêineres:
 ```bash
 docker compose up --build
 ```
 
-4. Access Squishy:
+4. Acesse o Squishy:
 
-Open your browser and navigate to `http://your-host:5101`. Squishy will guide
-you through the rest of the setup process!
+Abra seu navegador e navegue até `http://seu-host:5101`. O Squishy irá guiá-lo pelo resto do processo de configuração!
 
-### Hardware Acceleration
+### Usando a Imagem Docker Pré-construída
 
-Squishy currently supports VA-API for hardware accelerated transcoding. Support
-for other acceleration methods could be added if there is a strong demand from
-users.
+Uma imagem Docker pré-construída está disponível no GitHub Container Registry. Você pode baixá-la usando:
 
-Under the hood, Squishy uses an embedded project called `effeffmpeg`, which
-handles all of the transcoding and interfacing with ffmpeg. More detail is
-available in the [effeffmpeg README.md](https://github.com/cleverdevil/squishy/blob/main/squishy/effeffmpeg/README.md) in the source tree.
+```bash
+docker pull ghcr.io/OWNER/REPO:latest
+```
+
+Substitua `OWNER` pelo seu nome de usuário do GitHub e `REPO` pelo nome do repositório.
+
+**Nota:** Se o seu repositório for privado, você pode precisar autenticar no GitHub Container Registry ou alterar as configurações de visibilidade do pacote no seu repositório GitHub na guia "Packages".
+
+### Aceleração de Hardware
+
+O Squishy atualmente suporta VA-API para transcodificação acelerada por hardware. O suporte para outros métodos de aceleração pode ser adicionado se houver uma forte demanda dos usuários.
+
+Por baixo do capô, o Squishy usa um projeto embutido chamado `effeffmpeg`, que lida com toda a transcodificação e interface com o ffmpeg. Mais detalhes estão disponíveis no [effeffmpeg README.md](https://github.com/cleverdevil/squishy/blob/main/squishy/effeffmpeg/README.md) na árvore de fontes.
