@@ -1,0 +1,64 @@
+services:
+  prime-squishy:
+    # ✅ Use uma imagem pronta (recomendado)
+    image: prime-squishy:latest
+
+    # 🔧 Se você NÃO tiver imagem publicada, descomente o build abaixo:
+    # build:
+    #   context: .
+    #   dockerfile: Dockerfile
+
+    container_name: prime-squishy
+    hostname: prime-squishy
+    restart: unless-stopped
+
+    environment:
+      - TZ=America/Bahia
+      - PUID=1000
+      - PGID=1000
+      - LIBVA_DRIVER_NAME=iHD
+      - LIBVA_DRIVERS_PATH=/usr/lib/x86_64-linux-gnu/dri
+
+    # ✅ Volumes nomeados (sem bind mount)
+    volumes:
+      - squishy_config:/config
+      - squishy_media:/media
+      - squishy_transcodes:/transcodes
+
+    # 🎬 Hardware accel (Intel VAAPI/QSV)
+    devices:
+      - /dev/dri/renderD128:/dev/dri/renderD128
+      - /dev/dri/card0:/dev/dri/card0
+
+    group_add:
+      - video
+      - "105" # Render group GID (ajuste se seu host usar outro)
+
+    networks:
+      - network_public
+      - network_apps
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=network_public"
+      - "traefik.http.routers.prime-squishy.rule=Host(`squishy.primecine.xyz`)"
+      - "traefik.http.routers.prime-squishy.entrypoints=websecure"
+      - "traefik.http.routers.prime-squishy.priority=1"
+      - "traefik.http.routers.prime-squishy.tls.certresolver=letsencryptresolver"
+      - "traefik.http.services.prime-squishy.loadbalancer.server.port=5101"
+    # Se quiser acesso direto por IP/porta (sem Traefik), descomente:
+    # ports:
+    #   - "5101:5101"
+
+networks:
+  network_public:
+    external: true
+    name: network_public
+  network_apps:
+    external: true
+    name: network_apps
+
+volumes:
+  squishy_config:
+  squishy_media:
+  squishy_transcodes:
