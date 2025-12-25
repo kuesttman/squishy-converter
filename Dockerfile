@@ -42,8 +42,10 @@ COPY . /app/
 RUN chown -R squishy:squishy /app
 
 # Copy entrypoint script
+# Copy entrypoint script
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+RUN sed -i 's/\r$//' /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
 # Switch to app user for pip install
 USER squishy

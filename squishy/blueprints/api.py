@@ -176,8 +176,9 @@ def transcode():
 @api_bp.route("/jobs", methods=["GET"])
 def list_jobs():
     """List all transcoding jobs."""
-    from squishy.transcoder import JOBS
+    from squishy.transcoder import get_all_jobs
 
+    all_jobs = get_all_jobs()
     return jsonify(
         {
             "jobs": [
@@ -197,7 +198,7 @@ def list_jobs():
                     if job.ffmpeg_logs
                     else [],  # Include last 30 log lines
                 }
-                for job in JOBS.values()
+                for job in all_jobs
             ]
         }
     )

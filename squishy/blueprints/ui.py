@@ -13,8 +13,8 @@ from flask import (
 
 from squishy.config import load_config
 from squishy.scanner import get_media, get_show
+from squishy.models import Episode
 from squishy.transcoder import (
-    JOBS,
     create_job,
     start_transcode,
     apply_output_path_mapping,
@@ -142,88 +142,71 @@ def transcode(media_id):
 @ui_bp.route("/jobs")
 def jobs():
     """Display transcoding jobs grouped by status."""
+    
+    # Get all jobs from DB
+    from squishy.transcoder import get_all_jobs
+    all_jobs = get_all_jobs()
 
     # Get media items for each job to display title instead of ID
     active_jobs = []
     completed_jobs = []
     failed_jobs = []
 
-    for job in JOBS.values():
-        media_item = get_media(job.media_id)
+    for job in all_jobs:
+        # job.media should be populated by SQLAlchemy if media_id is valid
+        # If not populated (e.g. transient media), fallback or handle graceful
+        
+        media_item = job.media
+        media_title = "Unknown"
+        file_size = "N/A"
+        
         if media_item:
+            # For TV shows, include show title
+            if media_item.type == "episode" and isinstance(media_item, Episode) and media_item.show_id:
+                # We don't have a Show table yet effortlessly, 
+                # but if we did we'd fetch it. 
+                # For now just use display_name
+                media_title = media_item.display_name
+            else:
+                media_title = media_item.display_name
+                
             # Get file size in a human-readable format
             try:
-                file_size_bytes = os.path.getsize(media_item.path)
-                file_size = format_file_size(file_size_bytes)
+                if os.path.exists(media_item.path):
+                    file_size_bytes = os.path.getsize(media_item.path)
+                    file_size = format_file_size(file_size_bytes)
+    
+                    # If job is completed and has output path, show both sizes and compression percentage
+                    if (
+                        job.status == "completed"
+                        and job.output_path
+                        and os.path.exists(job.output_path)
+                    ):
+                        output_size_bytes = os.path.getsize(job.output_path)
+                        output_size = format_file_size(output_size_bytes)
+    
+                        # Calculate compression percentage
+                        if file_size_bytes > 0:
+                            compression_pct = 100 - (
+                                output_size_bytes / file_size_bytes * 100
+                            )
+                            file_size = f"{file_size} → {output_size} ({compression_pct:.1f}% smaller)"
+            except OSError:
+                pass
+        
+        job_data = {
+            "job": job,
+            "media_title": media_title,
+            "file_size": file_size,
+        }
 
-                # If job is completed and has output path, show both sizes and compression percentage
-                if (
-                    job.status == "completed"
-                    and job.output_path
-                    and os.path.exists(job.output_path)
-                ):
-                    output_size_bytes = os.path.getsize(job.output_path)
-                    output_size = format_file_size(output_size_bytes)
-
-                    # Calculate compression percentage
-                    if file_size_bytes > 0:
-                        compression_pct = 100 - (
-                            output_size_bytes / file_size_bytes * 100
-                        )
-                        file_size = f"{file_size} → {output_size} ({compression_pct:.1f}% smaller)"
-
-                # For TV shows, include show title
-                if media_item.type == "episode" and media_item.show_id:
-                    show = get_show(media_item.show_id)
-                    if show:
-                        media_title = f"{show.title} - {media_item.display_name}"
-                    else:
-                        media_title = media_item.display_name
-                else:
-                    media_title = media_item.display_name
-
-                job_data = {
-                    "job": job,
-                    "media_title": media_title,
-                    "file_size": file_size,
-                }
-
-                # Categorize job by status
-                if job.status in ["processing", "pending"]:
-                    active_jobs.append(job_data)
-                elif job.status == "completed":
-                    completed_jobs.append(job_data)
-                else:  # failed or cancelled
-                    failed_jobs.append(job_data)
-
-            except (FileNotFoundError, OSError):
-                # Handle case where file doesn't exist or can't be accessed
-                job_data = {
-                    "job": job,
-                    "media_title": media_item.display_name if media_item else "Unknown",
-                    "file_size": "N/A",
-                }
-
-                # Categorize job by status
-                if job.status in ["processing", "pending"]:
-                    active_jobs.append(job_data)
-                elif job.status == "completed":
-                    completed_jobs.append(job_data)
-                else:  # failed or cancelled
-                    failed_jobs.append(job_data)
-        else:
-            job_data = {"job": job, "media_title": "Unknown", "file_size": "N/A"}
-
-            # Categorize job by status
-            if job.status in ["processing", "pending"]:
-                active_jobs.append(job_data)
-            elif job.status == "completed":
-                completed_jobs.append(job_data)
-            else:  # failed or cancelled
-                failed_jobs.append(job_data)
-
-    # Sort active jobs to put processing ones first, then pending ones
-    active_jobs.sort(key=lambda x: 0 if x["job"].status == "processing" else 1)
+        # Categorize job by status
+        if job.status in ["processing", "pending"]:
+            active_jobs.append(job_data)
+        elif job.status == "completed":
+            completed_jobs.append(job_data)
+        else:  # failed or cancelled
+            failed_jobs.append(job_data)
 
     return render_template(
         "ui/jobs.html",

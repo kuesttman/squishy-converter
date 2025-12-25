@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Concert+One&display=swap" rel="stylesheet">
     {% block head %}{% endblock %}
 </head>
+
 <body>
     <!-- Splash Screen -->
     <div id="splash-screen">
@@ -28,25 +30,41 @@
             </div>
         </div>
     </div>
-    
+
     <header>
         <nav>
             <div class="logo">
                 <a href="{{ url_for('ui.index') }}"><img src="/static/img/logo.png" alt="Squishy!"></a>
             </div>
-            
+
             <!-- Mobile menu toggle button -->
             <button class="mobile-menu-toggle" aria-label="Toggle menu">
                 <span class="menu-bar"></span>
                 <span class="menu-bar"></span>
                 <span class="menu-bar"></span>
             </button>
-            
+
             <ul class="nav-menu">
-                <li{% if request.endpoint == 'ui.index' %} class="active"{% endif %}><a href="{{ url_for('ui.index') }}">Home</a></li>
-                <li{% if request.endpoint == 'ui.jobs' %} class="active"{% endif %}><a href="{{ url_for('ui.jobs') }}">Jobs</a></li>
-                <li{% if request.endpoint == 'ui.completed' %} class="active"{% endif %}><a href="{{ url_for('ui.completed') }}">Completed</a></li>
-                <li{% if request.endpoint and request.endpoint.startswith('admin.') %} class="active"{% endif %}><a href="{{ url_for('admin.index') }}">Admin</a></li>
+                <li{% if request.endpoint=='ui.index' %} class="active" {% endif %}><a
+                        href="{{ url_for('ui.index') }}">Home</a></li>
+                    <li{% if request.endpoint=='ui.jobs' %} class="active" {% endif %}><a
+                            href="{{ url_for('ui.jobs') }}">Jobs</a></li>
+                        <li{% if request.endpoint=='ui.completed' %} class="active" {% endif %}><a
+                                href="{{ url_for('ui.completed') }}">Completed</a></li>
+                            <li{% if request.endpoint=='admin.index' %} class="active" {% endif %}><a
+                                    href="{{ url_for('admin.index') }}">Admin</a></li>
+                                {% if current_user.is_authenticated %}
+                                <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                                {% else %}
+                                <li{% if request.endpoint=='auth.login' %} class="active" {% endif %}><a
+                                        href="{{ url_for('auth.login') }}">Login</a></li>
+                                    {% endif %}
+                                    <li class="lang-selector" style="margin-left: 15px;">
+                                        <a href="{{ url_for('auth.set_language', language='en') }}"
+                                            style="padding: 5px;">🇺🇸</a>
+                                        <a href="{{ url_for('auth.set_language', language='pt_BR') }}"
+                                            style="padding: 5px;">🇧🇷</a>
+                                    </li>
             </ul>
         </nav>
     </header>
@@ -75,7 +93,7 @@
     <!-- Make flashed messages available to JavaScript -->
     <script>
         // Pass flashed messages to JavaScript
-        const FLASHED_MESSAGES = {{ get_flashed_messages(with_categories=true)|tojson }};
+        const FLASHED_MESSAGES = {{ get_flashed_messages(with_categories = true) | tojson }};
     </script>
 
     <!-- Check for splash screen force parameter -->
@@ -85,13 +103,13 @@
         if (urlParams.has('splash')) {
             // Delete the cookie to force splash to show
             document.cookie = "squishy_last_splash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            
+
             // Remove the parameter from URL without refreshing page
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
         }
     </script>
-    
+
     <!-- Core application scripts -->
     <script src="{{ url_for('static', filename='js/splash.js') }}"></script>
     <script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
@@ -101,4 +119,5 @@
     <!-- Page-specific scripts -->
     {% block scripts %}{% endblock %}
 </body>
+
 </html>

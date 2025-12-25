@@ -54,25 +54,63 @@ def create_app(test_config=None):
         pass
 
     # Register blueprints
+    from squishy.blueprints.auth import auth_bp
+    from squishy.blueprints.library import library_bp
+    app.register_blueprint(auth_bp)
     app.register_blueprint(api_bp, url_prefix="/api")
     app.register_blueprint(ui_bp)
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(onboarding_bp, url_prefix="/onboarding")
+    app.register_blueprint(library_bp)
     
     # Initialize SocketIO with the app
     socketio.init_app(app, cors_allowed_origins="*", async_mode="eventlet")
     
-    # Import socket events after socketio initialization to avoid circular imports
-    from squishy import socket_events  # noqa
     
+    # Initialize Extensions
+    db_path = os.path.join(app.config.get('CONFIG_PATH', 'config'), 'squishy.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    
+    from squishy.database import init_db
+    init_db(app)
+
+    # Initialize LoginManager
+    from flask_login import LoginManager
+    from squishy.user import User
+    login_manager = LoginManager()
+    login_manager.login_view = 'auth.login'
+    login_manager.init_app(app)
+
+    @login_manager.user_loader
+    def load_user(user_id):
+        return User.get(user_id)
+
+    # Initialize Flask-Babel
+    from flask_babel import Babel
+    
+    def get_locale():
+        if 'language' in session:
+            return session['language']
+        # Try to get from config
+        try:
+            config = load_config()
+            return config.language
+        except:
+            pass
+        return request.accept_languages.best_match(['pt_BR', 'en'])
+
+    babel = Babel(app, locale_selector=get_locale)
+
     # Add a before_request handler to check if this is the first run
     @app.before_request
     def check_first_run():
         # Skip for onboarding and static routes
-        if request.path.startswith('/static') or request.path.startswith('/onboarding'):
+        if request.path.startswith('/static') or request.path.startswith('/onboarding') or request.path.startswith('/login') or request.path.startswith('/set_language'):
             return None
             
-        # Skip for API routes as well
+        # Skip for API routes as well (protect them separately if needed, or rely on token/same auth)
+        # Note: Depending on API usage, might need Basic Auth or ensuring session cookie is sent.
         if request.path.startswith('/api'):
             return None
             

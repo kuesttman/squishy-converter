@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  squishy:
+    build: .
+    container_name: squishy_dev
+    ports:
+      - "5000:5000"
+    volumes:
+      # Map source code for development (hot-reload where supported, or easy restart)
+      - ./:/app
+      - ./config:/app/config
+      # Media volumes (using user's E: drive as per their jellyfin example)
+      - E:\Media\Filmes:/media
+    environment:
+      - FLASK_APP=squishy/app.py
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,video,utility
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+volumes:
+  squishy_dev_transcodes:

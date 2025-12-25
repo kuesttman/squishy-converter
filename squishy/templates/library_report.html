@@ -1,0 +1,297 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Library Report</h1>
+        <div>
+            <button id="scanBtn" class="btn btn-primary" onclick="startScan()">
+                <i class="fas fa-search"></i> Deep Scan
+            </button>
+        </div>
+    </div>
+
+    <!-- Scan Status -->
+    <div id="scanStatus" class="alert alert-info" style="display: none;">
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+        Scanning in progress... <span id="processedCount">0</span> files processed.
+    </div>
+
+    {% if report %}
+    <div class="row">
+        <!-- Summary Cards -->
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Files</h5>
+                    <p class="card-text display-4">{{ report.scan_summary.total_files }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Size</h5>
+                    <p class="card-text display-4">{{ report.scan_summary.total_size_gb }} GB</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Total Duration</h5>
+                    <p class="card-text display-4">{{ report.scan_summary.total_duration_hours }} h</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Avg Audio/File</h5>
+                    <p class="card-text display-4">{{ report.stream_stats.avg_audio_per_file }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Charts/Stats -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">Video Codecs</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for codec, count in report.distributions.video_codecs.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ codec or 'Unknown' }}
+                            <span class="badge bg-primary rounded-pill">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header">Resolutions</div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        {% for res, count in report.distributions.resolutions.items() %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            {{ res }}
+                            <span class="badge bg-success rounded-pill">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Browser Section -->
+    <hr class="my-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>File Browser</h2>
+        <div>
+            <div class="input-group">
+                <input type="text" id="filterInput" class="form-control" placeholder="Search files...">
+                <button class="btn btn-success ms-2" id="queueBtn" onclick="queueSelected()" disabled>
+                    <i class="fas fa-play"></i> Queue Selected (<span id="selectedCount">0</span>)
+                </button>
+            </div>
+            <div class="form-text text-end">Default Preset: High (Customize in Settings)</div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover" id="filesTable">
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll" onclick="toggleAll(this)"></th>
+                    <th>Filename</th>
+                    <th>Resolution</th>
+                    <th>Video Codec</th>
+                    <th>Audio</th>
+                    <th>Size</th>
+                </tr>
+            </thead>
+            <tbody id="filesTableBody">
+                <!-- Items populated by JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-2 text-muted text-end">
+        Generated at: {{ report.generated_at }}
+    </div>
+
+    {% else %}
+    <div class="alert alert-secondary text-center p-5">
+        <h4>No report available</h4>
+        <p>Run a Deep Scan to analyze your library.</p>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+    let allItems = [];
+    let selectedItems = new Set();
+
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function loadItems() {
+        fetch("{{ url_for('library.get_items') }}")
+            .then(response => response.json())
+            .then(data => {
+                if (data.items) {
+                    allItems = data.items;
+                    renderTable(allItems);
+                }
+            });
+    }
+
+    function renderTable(items) {
+        const tbody = document.getElementById("filesTableBody");
+        tbody.innerHTML = "";
+
+        items.forEach(item => {
+            const row = document.createElement("tr");
+            const isSelected = selectedItems.has(item.path);
+
+            row.innerHTML = `
+            <td><input type="checkbox" class="file-check" value="${item.path}" onchange="toggleItem(this)" ${isSelected ? 'checked' : ''}></td>
+            <td title="${item.path}">${item.filename}</td>
+            <td>${item.width ? item.width + 'x' + item.height : 'N/A'}</td>
+            <td>${item.video_codec || 'N/A'}</td>
+            <td>${item.audio_codecs ? item.audio_codecs.join(', ') : 'None'}</td>
+            <td>${formatSize(item.size)}</td>
+        `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // Filter logic
+    document.getElementById("filterInput").addEventListener("input", function (e) {
+        const term = e.target.value.toLowerCase();
+        const filtered = allItems.filter(item =>
+            item.filename.toLowerCase().includes(term) ||
+            (item.video_codec && item.video_codec.toLowerCase().includes(term))
+        );
+        renderTable(filtered);
+    });
+
+    function toggleItem(checkbox) {
+        if (checkbox.checked) {
+            selectedItems.add(checkbox.value);
+        } else {
+            selectedItems.delete(checkbox.value);
+        }
+        updateSelectionUI();
+    }
+
+    function toggleAll(source) {
+        const checkboxes = document.querySelectorAll('.file-check');
+        checkboxes.forEach(cb => {
+            cb.checked = source.checked;
+            if (source.checked) {
+                selectedItems.add(cb.value);
+            } else {
+                selectedItems.delete(cb.value);
+            }
+        });
+        updateSelectionUI();
+    }
+
+    function updateSelectionUI() {
+        document.getElementById("selectedCount").innerText = selectedItems.size;
+        document.getElementById("queueBtn").disabled = selectedItems.size === 0;
+    }
+
+    function queueSelected() {
+        if (selectedItems.size === 0) return;
+
+        if (!confirm(`Queue ${selectedItems.size} files for transcoding?`)) return;
+
+        const queueBtn = document.getElementById("queueBtn");
+        queueBtn.disabled = true;
+        queueBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Queuing...';
+
+        fetch("{{ url_for('library.batch_queue') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ files: Array.from(selectedItems) })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    alert(data.message);
+                    selectedItems.clear();
+                    updateSelectionUI();
+
+                    // Uncheck all
+                    document.querySelectorAll('.file-check').forEach(cb => cb.checked = false);
+                    document.getElementById("selectAll").checked = false;
+                } else {
+                    alert("Error: " + data.message);
+                }
+
+                queueBtn.innerHTML = '<i class="fas fa-play"></i> Queue Selected (<span id="selectedCount">0</span>)';
+                // Re-enable handled by updateSelectionUI
+            });
+    }
+
+    function startScan() {
+        fetch("{{ url_for('library.start_scan') }}", { method: "POST" })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === "success") {
+                    checkStatus();
+                } else {
+                    alert(data.message);
+                }
+            });
+    }
+
+    function checkStatus() {
+        const statusDiv = document.getElementById("scanStatus");
+        const scanBtn = document.getElementById("scanBtn");
+
+        statusDiv.style.display = "block";
+        scanBtn.disabled = true;
+
+        const interval = setInterval(() => {
+            fetch("{{ url_for('library.status') }}")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.is_scanning) {
+                        document.getElementById("processedCount").innerText = data.items_processed;
+                    } else {
+                        clearInterval(interval);
+                        statusDiv.style.display = "none";
+                        scanBtn.disabled = false;
+                        if (data.last_report) {
+                            location.reload();
+                        }
+                    }
+                });
+        }, 2000);
+    }
+
+    // Initial status check
+    {% if scanning %}
+    checkStatus();
+    {% endif %}
+
+    // Load items if report exists
+    {% if report %}
+    loadItems();
+    {% endif %}
+</script>
+{% endblock %}
