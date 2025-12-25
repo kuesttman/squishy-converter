@@ -50,9 +50,12 @@ RUN sed -i 's/\r$//' /entrypoint.sh && \
 # Switch to app user for pip install
 USER squishy
 
+# Set PATH for user-installed packages
+ENV PATH="/app/.local/bin:$PATH"
+
 # Install Python dependencies
-RUN pip install --upgrade pip && \
-    pip install -e .
+RUN pip install --user --upgrade pip && \
+    pip install --user -e .
 
 # Switch back to root for entrypoint
 USER root
