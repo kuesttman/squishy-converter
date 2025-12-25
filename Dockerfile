@@ -14,21 +14,24 @@ RUN groupadd -r squishy && \
 # Install system dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    ffmpeg \
-    libva-dev \
-    va-driver-all \
-    mesa-va-drivers \
-    intel-media-va-driver \
-    i965-va-driver \
-    libva-drm2 \
-    libva-x11-2 \
-    libdrm2 \
-    libdrm-intel1 \
-    libvdpau1 \
-    ocl-icd-opencl-dev \
-    vainfo \
+    curl \
+    gnupg \
+    && mkdir -p /etc/apt/keyrings \
+    && curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg \
+    && echo "deb [arch=$( dpkg --print-architecture ) signed-by=/etc/apt/keyrings/jellyfin.gpg] https://repo.jellyfin.org/debian bookworm main" | tee /etc/apt/sources.list.d/jellyfin.list \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+    jellyfin-ffmpeg6 \
+    openssl \
+    locales \
+    && ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/local/bin/ffmpeg \
+    && ln -s /usr/lib/jellyfin-ffmpeg/ffprobe /usr/local/bin/ffprobe \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
+# Generate locale
+RUN echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
 
 # Create necessary directories
 RUN mkdir -p /app && \
@@ -50,6 +53,9 @@ RUN sed -i 's/\r$//' /entrypoint.sh && \
 # Install Python dependencies as root (globally)
 RUN pip install --upgrade pip && \
     pip install -e .
+
+# Compile translations
+# RUN pybabel compile -d squishy/translations
 
 # Expose port
 EXPOSE 5101

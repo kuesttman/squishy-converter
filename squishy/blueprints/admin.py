@@ -26,6 +26,16 @@ from squishy.transcoder import (
 
 admin_bp = Blueprint("admin", __name__)
 
+@admin_bp.before_request
+def check_auth():
+    """Check if authentication is required."""
+    config = load_config()
+    
+    # If auth is enabled and user is not authenticated, redirect to login
+    from flask_login import current_user
+    if config.auth_enabled and not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=request.url))
+
 
 codecs = [
     {"value": "h264", "label": "H.264 (AVC)"},

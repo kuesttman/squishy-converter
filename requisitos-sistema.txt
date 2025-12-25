@@ -1,0 +1,66 @@
+Quero fazer modificações no codigo do sistema, mas nao quero toda vez acionar o github actions e gerar uma imagem. Entao quero criar uma branch diferente, que nao acione o github actions, e so acionar quando fizer commit na branch principal.
+
+Segundo, quero fazer testes locais, com builds a cada commit e push e testar localmente no meu computador com o docker local. 
+
+E agora segue minha lista de modificações que desejo adicionar, funcionalidades para melhorar a segurança e personalização para poder encodar de forma mais facilitada. 
+Ao fazer alterações e/ou adições de novas funções, deve alterar o readme e o manual, e os demais arquivos de markdown que contem instruções sobre o sistema e o funcionamento dos modulos. 
+
+- Adicionar Autenticação Basica, com configuração no painel web, informando usuario e senha. Da mesma forma como o radarr, sonarr, bazarr utiliza. 
+- Adicionar uma forma de tradução, que seja selecionado nas configurações tambem. Por enquanto pode manter o idioma ingles, mas quero que traduza todo o sistema para portugues do brasil, e seja possivel selecionar nas configurações do sistema. 
+- Em Transcoding Presets, na parte de Edit Transcoding Preset, quero ter opção de configurar mais funções ao ffmpeg, como manter todos os audios, manter as legendas, manter os metadados, remover anexos, e se for mp4 ele deve compatibilizar os streams, como legendas que sao ass em mkv deve ser mov_text em mp4. Deve ser capaz tambem de identificar se o arquivo de video esta em h264, h265, audio em aac ou eac3, e nao converter, a nao ser que seja para reduzir a resolução, ou diminuir o bitrate, entao quero ter mais possibilidades de configurar os presets do ffmpeg, para poder diminuir o transcode. 
+Quero que ao final do encode, ele mova os arquivos convertidos para a pasta original dele, com o nome alterado para a resolução que ele foi convertido. E o arquivo original seja movido para uma outra pasta ou removido do disco, e essa função de mover o original ou remover do disco seja configuravel. 
+
+Entao, meu objetivo é ter varias versoes do arquivo de video, pelo menos 3 ou 4 versoes. Como esses 3 filmes abaixo, porem geralmente tenho somente 1 arquivo em 1080p e quero versoes em 1080p, 720p, 480p. Se tiver o 4k original mantem. 
+
+ The.Great.Flood.2025.2160p.NF.WEB-DL.DDP5.1.Atmos.DV.HDR.H.265.DUAL-BiOMA.mkv
+ The.Old.Guard.2.2025.1080p.NF.WEB-DL.DDP5.1.Atmos.x264.DUAL-PiA.mkv
+ The.Old.Guard.2.2025.720p.NF.WEB-DL.DDP5.1.Atmos.x264.DUAL-PiA.mkv
+ The.Strangers.-.Chapter.2.2025.1080p.AMZN.WEB-DL.DDP5.1.H.264.DUAL-C76.mkv
+ The.Strangers.Chapter.2.2025.HDR.2160p.WEB.H265-SLOT.Dual-Tossato.mkv
+ Um.Contratempo.2016.1080p.BluRay-USURY.DUAL-GUR
+ Um.Contratempo.2016.720p.BluRay-USURY.DUAL-GUR
+'Um Lugar Bem Longe Daqui.2022.BRRip.1080p.H264.AC3.Dual - By Tontom'
+ Until.Dawn.2025.2160p.AMZN.WEB-DL.DDP5.1.HDR.H.265.DUAL-C76.mkv
+ Until.Dawn.2025.720p.AMZN.WEB-DL.DDP5.1.H.264.DUAL-C76.mkv
+ Vivo.ou.Morto.Um.Misterio.Knives.Out.2025.720p.NF.WEB-DL.DDP5.1.Atmos.x264.DUAL-PiA.mkv
+ Wake.Up.Dead.Man.A.Knives.Out.Mystery.2025.2160p.NF.WEB-DL.DDP5.1.Atmos.DV.HDR.H.265.DUAL-BiOMA.mkv
+
+The.Wild.Robot.2024.1080p.AMZN.WEB-DL.DDP5.1.H.264.DUAL-C76.mkv      The.Wild.Robot.2024.720p.AMZN.WEB-DL.DDP5.1.H.264.DUAL-C76.mkv
+The.Wild.Robot.2024.2160p.AMZN.WEB-DL.DDP5.1.HDR.H.265.DUAL-C76.mkv
+
+Como pode ver, eu geralmente baixo varias versoes do mesmo filme, o 4k quero manter original, os demais quero encodar para versoes mais leves, seja em h264 ou h265, sempre em mp4, sempre mantendo todos o audios, e legendas e metadados quando esses sao existentes, removendo anexos e coisas incompativeis com o mp4. Se ja tiver na mesma resolução desejada, quero apenas fazer alteração de container e o encode em resolução mais baixa, a nao ser que o arquivo original esteja com o dobro do bitrate desejado pelo preset. 
+
+Faça todas as alterações localmente, faça os comits necessarios, na branch separada da main, faça o deploy localmente, e faça testes automatizados, abrindo no navegador e testando. 
+Meu notebook possui uma placa de video nvidia rtx 4050, entao podemos utilizar a aceleração para testar um arquivo de video. 
+Analise o arquivo docker-compose-jellyfin.yml e Faça um docker compose para utilizar na minha máquina local windows para poder testar.
+
+--------------------------------------------------------------------------------
+Adicione mais umas funcionalidade. 
+
+O squishy tem um botão chamado "squishy" individual para cada arquivo, seja filme ou episodio de serie. 
+Quero ter a possibilidade de fazer o "squishy" em lote e enviar ao job. 
+- individual para cada arquivo
+- tambem para uma temporada completa
+- para uma serie completa
+- selecionar varios filmes de uma vez
+- Poder ter uma forma de filtro para filtrar filmes e series por categorias, por genero, por biblioteca, etc. 
+- Poder deixar configurado para determinada biblioteca, assim que for detectado um novo arquivo no jellyfin, o mesmo ja ser colocado em um job para encodar. 
+- Poder ter a possibilidade de notificar o jellyfin, para fazer o scan de determinada biblioteca novamente quando novos arquivos forem movidos para a pasta do filme, ou serie. 
+- Poder ter a possibilidade de executar um script externo ou ter função para criação, adição e execução de plugins para integrações, como por exemplo, executar o sonarr, radarr, filebot, etc. 
+- Possibilidade de adicionar uma biblioteca local, uma pasta com conteudo separado por categoria, de filme, series e animes, para realizar ações de arquivos e relatorios. 
+- ter um menu para poder fazer um scan e ter um report estilo o plugin do jellyfin "https://github.com/jellyfin/jellyfin-plugin-reports", porem com mais funções e detalhamento, e segmentação com profundidade, pois quero listar todos os arquivos que tenho em minhas pastas, separar por tipo igual o reports faz, por genero, poder saber quantos arquivos de video tenho em cada serie ou filme, saber se tem duplicatas, ter integração com o tmdb ou com o proprio jellyfin e buscar informações como duração e comparar com a duração do arquivo para saber se ele foi identificado corretamente pelo filebot ou pelo jellyfin, pois a identificação automatica e a renomeação automatica pode ser falha, e assim identificar um filme como outro, e isso pode ser facilmente identificado utilizando a duração do arquivo como parametro para comparar com a duração do filme informada no tmdb ou imdb, com uma certa margem de erro.
+- com essa nova funcionalidade, vou ter um relatorio detalhado dos meus arquivos brutos, por pastas, quantidade de arquivos, saber se esta faltando algum episodio ou nao, qual a qualidade dos arquivos, se tenho multiplos arquivos com qualidades e resoluções diferentes ou se tenho varios arquivos com a mesma qualidade/resolução, formato de codec de audio, video, extensão do arquivo, se tem legendas embutidas ou legendas internas e idioma das legendas, quantos audios possui e formato e idioma dos audios. 
+- Possibilidade de editar metadados, definir audio e legendas default, possibilidade de definir uma tela de intro tipo netflix, ou marca dagua de texto ou imagem no inicio do video por alguns segundos para evitar copia ou reprodução nao autorizada.
+- Possibilidade de limpar determinados formatos de arquivos ou certas pastas, como por exemplo: *.nfo, *.tmp, *.part, pasta "metadados","trickplay", "xattr", etc. Pode usar regex ou alguma forma de pattern igual rclone faz os filters dele.
+- Complete logs – Advanced filtering – Integrated search
+- Salvar informações em arquivos json, com as informações obtidas dos arquivos, para ter um historico de alterações e poder fazer roolback nas modificações dos arquivos ou para ter em um arquivo pesquisavel as informações de codec e informações da midia obtidas no jellyfin ou tmdb e imdb, para nao ter que fazer scan no arquivo ou chamadas de apis desnecessarias.
+Advanced statistics
+• Complete metrics – Viewing time per user
+• Interactive charts – Viewing trends
+• Customizable periods – Day, week, month, year
+• Content breakdown – Analysis by media type
+• Media search – Quickly find content
+
+Analise o arquivo "amostra_animes_series_filmes.json" na raiz do codigo, e verifique como é mais ou menos a minha arvore de arquivos. Apenas para ter uma ideia de como é o nome das pastas, arquivos, etc para poder criar o scan adequadamente. Veja que as pastas tem uma certa estrutura, tem nome com ano, tem id the movie db, etc. 
+
+Faça uma busca na WEB nas documentações e repositorios dos sistemas fileflows, tdarr e unmanic, que sao aplicações para transcode de arquivos e gerenciamentos de midia de video. Analise o que podemos utilizar e aprimorar em nosso sistema, e adicione nas nossas funcionalidades tambem o que achar viavel. 

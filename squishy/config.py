@@ -29,6 +29,7 @@ class Config:
     log_level: str = "INFO"  # Application log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     secret_key: Optional[str] = None  # Flask session secret key
     auth_users: Dict[str, str] = None  # Username -> Password
+    auth_enabled: bool = False  # Enable/Disable authentication
     language: str = "pt_BR"  # Default language
     output_to_source: bool = False  # If True, output file is moved to the source directory
     delete_original: bool = False # If True, original file is deleted after successful transcode
@@ -202,6 +203,7 @@ def load_config(config_path: str = None) -> Config:
         log_level=config_data.get("log_level", "INFO"),
         secret_key=config_data.get("secret_key"),
         auth_users=config_data.get("auth_users", {}),
+        auth_enabled=config_data.get("auth_enabled", False),
         language=config_data.get("language", "pt_BR"),
         output_to_source=config_data.get("output_to_source", False),
         delete_original=config_data.get("delete_original", False),
@@ -238,6 +240,7 @@ def save_config(config: Config, config_path: str = None) -> None:
         "log_level": config.log_level,
         "secret_key": config.secret_key,
         "auth_users": config.auth_users,
+        "auth_enabled": config.auth_enabled,
         "language": config.language,
         "output_to_source": config.output_to_source,
         "delete_original": config.delete_original,

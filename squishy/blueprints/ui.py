@@ -25,6 +25,24 @@ from squishy.completed import get_completed_transcodes, delete_transcode
 
 ui_bp = Blueprint("ui", __name__)
 
+@ui_bp.before_request
+def check_auth():
+    """Check if authentication is required."""
+    config = load_config()
+    
+    # Skip auth check for login/static/onboarding routes
+    if request.endpoint and (
+        request.endpoint.startswith('auth.') or 
+        request.endpoint.startswith('static') or
+        request.endpoint.startswith('onboarding.')
+    ):
+        return
+
+    # If auth is enabled and user is not authenticated, redirect to login
+    from flask_login import current_user
+    if config.auth_enabled and not current_user.is_authenticated:
+        return redirect(url_for('auth.login', next=request.url))
+
 
 # Helper function to format file size
 def format_file_size(bytes_size):
