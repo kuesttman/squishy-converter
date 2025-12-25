@@ -15,10 +15,67 @@ from squishy.models import TranscodeJob, MediaItem
 from squishy.effeffmpeg.effeffmpeg import (
     transcode as effeff_transcode,
     get_file_info,
+    detect_capabilities,
 )
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+
+def detect_hw_accel(ffmpeg_path: str = "ffmpeg") -> dict:
+    """Detect available hardware acceleration methods.
+    
+    This is a wrapper around effeffmpeg's detect_capabilities for compatibility.
+    """
+    try:
+        capabilities = detect_capabilities(ffmpeg_path=ffmpeg_path, quiet=True)
+        
+        # Build a response compatible with what admin.py expects
+        result = {
+            "available": [],
+            "recommended": {
+                "method": None,
+                "device": None
+            }
+        }
+        
+        # Check for NVIDIA NVENC
+        if capabilities.get("nvenc", {}).get("available"):
+            result["available"].append("nvenc")
+            if not result["recommended"]["method"]:
+                result["recommended"]["method"] = "nvenc"
+                result["recommended"]["device"] = None
+        
+        # Check for Intel QSV
+        if capabilities.get("qsv", {}).get("available"):
+            result["available"].append("qsv")
+            if not result["recommended"]["method"]:
+                result["recommended"]["method"] = "qsv"
+                result["recommended"]["device"] = "/dev/dri/renderD128"
+        
+        # Check for VAAPI
+        if capabilities.get("vaapi", {}).get("available"):
+            result["available"].append("vaapi")
+            if not result["recommended"]["method"]:
+                result["recommended"]["method"] = "vaapi"
+                result["recommended"]["device"] = "/dev/dri/renderD128"
+        
+        # Always add software as fallback
+        result["available"].append("software")
+        if not result["recommended"]["method"]:
+            result["recommended"]["method"] = "software"
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Error detecting hardware acceleration: {e}")
+        return {
+            "available": ["software"],
+            "recommended": {
+                "method": "software",
+                "device": None
+            }
+        }
 
 # Track running processes for cancellation
 RUNNING_PROCESSES = {}

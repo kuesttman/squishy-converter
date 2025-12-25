@@ -47,21 +47,12 @@ COPY entrypoint.sh /entrypoint.sh
 RUN sed -i 's/\r$//' /entrypoint.sh && \
     chmod +x /entrypoint.sh
 
-# Switch to app user for pip install
-USER squishy
-
-# Set PATH for user-installed packages
-ENV PATH="/app/.local/bin:$PATH"
-
-# Install Python dependencies
-RUN pip install --user --upgrade pip && \
-    pip install --user -e .
-
-# Switch back to root for entrypoint
-USER root
+# Install Python dependencies as root (globally)
+RUN pip install --upgrade pip && \
+    pip install -e .
 
 # Expose port
 EXPOSE 5101
 
-# Command to run
+# Command to run (entrypoint will switch to squishy user)
 ENTRYPOINT ["/entrypoint.sh"]
