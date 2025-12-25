@@ -5,7 +5,7 @@ services:
     build: .
     container_name: squishy_dev
     ports:
-      - "5000:5000"
+      - "5000:5101"
     volumes:
       # Map source code for development (hot-reload where supported, or easy restart)
       - ./:/app
