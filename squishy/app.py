@@ -68,7 +68,17 @@ def create_app(test_config=None):
     
     
     # Initialize Extensions
-    db_path = os.path.join(app.config.get('CONFIG_PATH', 'config'), 'squishy.db')
+    # Use /config directory for the database (mounted volume in Docker)
+    db_dir = os.environ.get('CONFIG_PATH', '/config')
+    if not db_dir.endswith('/'):
+        db_dir_base = os.path.dirname(db_dir) if db_dir.endswith('.json') else db_dir
+    else:
+        db_dir_base = db_dir
+    
+    # Ensure directory exists
+    os.makedirs(db_dir_base, exist_ok=True)
+    
+    db_path = os.path.join(db_dir_base, 'squishy.db')
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
