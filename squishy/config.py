@@ -101,7 +101,10 @@ def load_config(config_path: str = None) -> Config:
             "audio_codec": "aac",
             "audio_bitrate": "192k",
             "crf": 20,
-            "allow_fallback": True
+            "allow_fallback": True,
+            "audio_style": "transcode",
+            "subtitle_style": "copy",
+            "remove_attachments": False
         },
         "medium": {
             "codec": "hevc",
@@ -110,7 +113,10 @@ def load_config(config_path: str = None) -> Config:
             "audio_codec": "aac",
             "audio_bitrate": "128k",
             "crf": 24,
-            "allow_fallback": True
+            "allow_fallback": True,
+            "audio_style": "transcode",
+            "subtitle_style": "copy",
+            "remove_attachments": False
         },
         "low": {
             "codec": "hevc",
@@ -119,7 +125,10 @@ def load_config(config_path: str = None) -> Config:
             "audio_codec": "aac",
             "audio_bitrate": "96k",
             "crf": 28,
-            "allow_fallback": True
+            "allow_fallback": True,
+            "audio_style": "transcode",
+            "subtitle_style": "copy",
+            "remove_attachments": False
         }
     }
 

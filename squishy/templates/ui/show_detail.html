@@ -25,11 +25,15 @@
         {% endif %}
 
         <div class="media-info">
-            <h1>{{ show.display_name }}</h1>
+            <div style="display: flex; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <h1>{{ show.display_name }}</h1>
+                <button id="selectAllBtn" class="button small outline" style="margin-left: auto;">Select All</button>
+            </div>
 
             <div class="media-meta">
                 <span class="media-type-pill tv-type">TV Show</span>
-                <span class="seasons-pill">{{ show.seasons|length }} Season{% if show.seasons|length != 1 %}s{% endif %}</span>
+                <span class="seasons-pill">{{ show.seasons|length }} Season{% if show.seasons|length != 1 %}s{% endif
+                    %}</span>
                 <span class="episodes-pill">
                     {{ episode_count }} Episode{% if episode_count != 1 %}s{% endif %}
                 </span>
@@ -37,10 +41,10 @@
 
             <p class="media-description">
                 {% if show.overview %}
-                    {{ show.overview }}
+                {{ show.overview }}
                 {% else %}
-                    {{ show.title }} {% if show.year %}({{ show.year }}){% endif %} -
-                    A television series with {{ show.seasons|length }} season{% if show.seasons|length != 1 %}s{% endif %}.
+                {{ show.title }} {% if show.year %}({{ show.year }}){% endif %} -
+                A television series with {{ show.seasons|length }} season{% if show.seasons|length != 1 %}s{% endif %}.
                 {% endif %}
             </p>
 
@@ -72,7 +76,7 @@
                     <span class="metadata-value">{{ show.genres|join(', ') }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if show.studio %}
                 <div class="metadata-item">
                     <span class="metadata-label">Network:</span>
@@ -85,15 +89,20 @@
 
     <div class="seasons-container">
         {% for season in show.sorted_seasons %}
-        <div class="admin-section">
-            <h2>{{ season.display_name }}</h2>
+        <div class="admin-section season-{{ season.id }}">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h2>{{ season.display_name }}</h2>
+                <button class="button small outline" onclick="selectSeason('{{ season.id }}')">Select Season</button>
+            </div>
 
             <div class="episodes-table">
                 {% for episode in season.sorted_episodes %}
                 <div class="episode-row">
+                    <input type="checkbox" class="episode-checkbox" value="{{ episode.id }}">
                     <div class="episode-artwork">
                         {% if episode.thumbnail_url %}
-                        <img src="{{ episode.thumbnail_url }}" alt="{{ episode.display_name }}" class="episode-thumbnail">
+                        <img src="{{ episode.thumbnail_url }}" alt="{{ episode.display_name }}"
+                            class="episode-thumbnail">
                         {% else %}
                         <div class="placeholder-thumbnail">
                             <span>{{ episode.episode_number if episode.episode_number else '?' }}</span>
@@ -114,20 +123,14 @@
                     </div>
 
                     <div class="episode-actions">
-                        <button type="button" class="tech-info-btn"
-                                {% if episode.id in valid_episode_ids %}
-                                data-episode-id="{{ episode.id }}"
-                                data-path="{{ episode.path }}"
-                                {% else %}
-                                disabled
-                                title="Technical info not available for this episode"
-                                {% endif %}>
+                        <button type="button" class="tech-info-btn" {% if episode.id in valid_episode_ids %}
+                            data-episode-id="{{ episode.id }}" data-path="{{ episode.path }}" {% else %} disabled
+                            title="Technical info not available for this episode" {% endif %}>
                             Technical Info
                         </button>
 
-                        <button type="button" class="squish-btn"
-                                data-episode-id="{{ episode.id }}"
-                                data-episode-title="{{ episode.display_name }}">
+                        <button type="button" class="squish-btn" data-episode-id="{{ episode.id }}"
+                            data-episode-title="{{ episode.display_name }}">
                             Squish
                         </button>
                     </div>
@@ -165,7 +168,9 @@
                 <div class="form-group">
                     <select id="squishProfile" name="preset_name" required>
                         {% for name, preset in profiles.items() %}
-                        <option value="{{ name }}">{{ name }} ({{ preset.scale }}, {{ preset.codec }})</option>
+                        <option value="{{ name }}">{{ name }} ({{ preset.scale }}, {{ preset.codec }}) [A: {{
+                            preset.audio_style|default('transcode')|capitalize }}, S: {{
+                            preset.subtitle_style|default('copy')|capitalize }}]</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -177,4 +182,59 @@
         </div>
     </div>
 </div>
+
+<div id="batchActionBar" class="batch-action-bar">
+    <div class="batch-content">
+        <span class="batch-count"><span id="batchSelectedCount">0</span> items selected</span>
+        <button id="batchSquishBtn" class="button primary">Squish Selected</button>
+        <button id="selectNoneBtn" class="button secondary">Clear Selection</button>
+    </div>
+</div>
+
+<style>
+    .batch-action-bar {
+        position: fixed;
+        bottom: -100px;
+        left: 0;
+        right: 0;
+        background: var(--card-bg, #fff);
+        padding: 1.5rem;
+        box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.15);
+        transition: bottom 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 1000;
+        display: flex;
+        justify-content: center;
+        border-top: 1px solid var(--border-color, #eee);
+    }
+
+    .batch-action-bar.visible {
+        bottom: 0;
+    }
+
+    .batch-content {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        max-width: 800px;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .batch-count {
+        font-size: 1.2rem;
+        font-weight: bold;
+    }
+
+    .episode-checkbox {
+        width: 24px;
+        height: 24px;
+        margin-right: 20px;
+        cursor: pointer;
+        accent-color: var(--primary-color, #6c5ce7);
+    }
+
+    .season-actions {
+        margin-left: auto;
+    }
+</style>
 {% endblock %}

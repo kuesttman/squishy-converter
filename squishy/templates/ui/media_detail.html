@@ -22,30 +22,31 @@
 
         <div class="media-info">
             <h1>{{ media.display_name }}</h1>
-            
+
             <div class="media-meta">
                 <span class="media-type-pill {% if media.type == 'movie' %}movie-type{% else %}tv-type{% endif %}">
                     {{ media.type|capitalize }}
                 </span>
-                
+
                 <!-- Resolution badge placeholder, will be filled by JavaScript -->
                 <span id="resolution-badge" class="resolution-pill" style="display: none;"></span>
-                
+
                 <!-- HDR badge placeholder, will be filled by JavaScript -->
                 <span id="hdr-badge" class="hdr-pill" style="display: none;"></span>
             </div>
-            
+
             <p class="media-description">
                 {% if media.overview %}
-                    {{ media.overview }}
+                {{ media.overview }}
                 {% else %}
-                    {{ media.title }} {% if media.year %}({{ media.year }}){% endif %} -
-                    <span id="duration-info">Loading...</span>,
-                    <span id="file-size-info">Loading...</span>
+                {{ media.title }} {% if media.year %}({{ media.year }}){% endif %} -
+                <span id="duration-info">Loading...</span>,
+                <span id="file-size-info">Loading...</span>
                 {% endif %}
             </p>
-            
-            {% if media.genres or media.directors or media.actors or media.release_date or media.rating or media.content_rating or media.studio %}
+
+            {% if media.genres or media.directors or media.actors or media.release_date or media.rating or
+            media.content_rating or media.studio %}
             <div class="media-metadata">
                 {% if media.genres %}
                 <div class="metadata-item">
@@ -53,42 +54,42 @@
                     <span class="metadata-value">{{ media.genres|join(', ') }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if media.directors %}
                 <div class="metadata-item">
                     <span class="metadata-label">Director{% if media.directors|length > 1 %}s{% endif %}:</span>
                     <span class="metadata-value">{{ media.directors|join(', ') }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if media.actors %}
                 <div class="metadata-item">
                     <span class="metadata-label">Cast:</span>
                     <span class="metadata-value">{{ media.actors|join(', ') }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if media.release_date %}
                 <div class="metadata-item">
                     <span class="metadata-label">Released:</span>
                     <span class="metadata-value">{{ media.release_date[:10] }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if media.rating %}
                 <div class="metadata-item">
                     <span class="metadata-label">Rating:</span>
                     <span class="metadata-value">{{ '%0.1f'|format(media.rating) }}/10</span>
                 </div>
                 {% endif %}
-                
+
                 {% if media.content_rating %}
                 <div class="metadata-item">
                     <span class="metadata-label">Content Rating:</span>
                     <span class="metadata-value">{{ media.content_rating }}</span>
                 </div>
                 {% endif %}
-                
+
                 {% if media.studio %}
                 <div class="metadata-item">
                     <span class="metadata-label">Studio:</span>
@@ -97,13 +98,15 @@
                 {% endif %}
             </div>
             {% endif %}
-            
+
             <form action="{{ url_for('ui.transcode', media_id=media.id) }}" method="post" class="transcode-form">
                 <div class="form-group">
                     <label for="preset_name">Preset</label>
                     <select id="preset_name" name="preset_name" required>
                         {% for name, preset in profiles.items() %}
-                        <option value="{{ name }}">{{ name }} ({{ preset.scale }}, {{ preset.codec }})</option>
+                        <option value="{{ name }}">{{ name }} ({{ preset.scale }}, {{ preset.codec }}) [A: {{
+                            preset.audio_style|default('transcode')|capitalize }}, S: {{
+                            preset.subtitle_style|default('copy')|capitalize }}]</option>
                         {% endfor %}
                     </select>
                 </div>
@@ -113,13 +116,13 @@
     </div>
 
     <h1>Technical Information</h1>
-    
+
     <!-- Loading indicator -->
     <div id="tech-info-loading" class="loading-container">
         <div class="loading-spinner"></div>
         <p>Loading technical information...</p>
     </div>
-    
+
     <!-- Technical information container, initially hidden -->
     <div id="technical-info-container" style="display: none;">
         <div class="admin-section">

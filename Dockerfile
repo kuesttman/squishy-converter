@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.10-slim-bookworm
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -11,23 +11,26 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN groupadd -r squishy && \
     useradd -r -g squishy -d /app -s /bin/bash squishy
 
-# Install system dependencies
+# Install initial dependencies
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     curl \
     gnupg \
-    && mkdir -p /etc/apt/keyrings \
-    && curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg \
-    && echo "deb [arch=$( dpkg --print-architecture ) signed-by=/etc/apt/keyrings/jellyfin.gpg] https://repo.jellyfin.org/debian bookworm main" | tee /etc/apt/sources.list.d/jellyfin.list \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends \
-    jellyfin-ffmpeg6 \
-    openssl \
     locales \
-    && ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/local/bin/ffmpeg \
-    && ln -s /usr/lib/jellyfin-ffmpeg/ffprobe /usr/local/bin/ffprobe \
-    && apt-get clean \
+    openssl \
     && rm -rf /var/lib/apt/lists/*
+
+# Add Jellyfin repo and install ffmpeg
+RUN mkdir -p /etc/apt/keyrings && \
+    curl -fsSL https://repo.jellyfin.org/jellyfin_team.gpg.key | gpg --dearmor -o /etc/apt/keyrings/jellyfin.gpg && \
+    echo "deb [arch=$( dpkg --print-architecture ) signed-by=/etc/apt/keyrings/jellyfin.gpg] https://repo.jellyfin.org/debian bookworm main" | tee /etc/apt/sources.list.d/jellyfin.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    jellyfin-ffmpeg6 && \
+    ln -s /usr/lib/jellyfin-ffmpeg/ffmpeg /usr/local/bin/ffmpeg && \
+    ln -s /usr/lib/jellyfin-ffmpeg/ffprobe /usr/local/bin/ffprobe && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Generate locale
 RUN echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen && \
@@ -55,7 +58,7 @@ RUN pip install --upgrade pip && \
     pip install -e .
 
 # Compile translations
-# RUN pybabel compile -d squishy/translations
+RUN pybabel compile -d squishy/translations
 
 # Expose port
 EXPOSE 5101

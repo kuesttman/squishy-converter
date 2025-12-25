@@ -33,7 +33,35 @@ from squishy.transcoder import (
     remove_job as remove_transcode_job,  # ❌ NÃO EXISTE
     cancel_job as cancel_transcode_job,  # ❌ NÃO EXISTE
 )
-```
+
+### Proposed Changes (Phase 3: Batch Operations)
+
+### UI Changes
+#### [MODIFY] [show_detail.html](file:///c:/Users/sk4rf/OneDrive/Documentos/Softwares/Repositorios/squishy-converter/squishy/templates/ui/show_detail.html)
+- Add checkboxes to each episode row.
+- Add "Select All / None" controls.
+- Add "Squish Season" button in season headers.
+- Add "Squish Show" button in main header.
+- Add floating "Batch Action Bar" for selected items.
+
+#### [NEW] [batch.js](file:///c:/Users/sk4rf/OneDrive/Documentos/Softwares/Repositorios/squishy-converter/squishy/static/js/batch.js)
+- Handle selection logic (shift-click ranges, select all).
+- Handle "Squish" button click -> Open Modal.
+- Submit batch request to backend.
+
+### Backend Changes
+#### [MODIFY] [ui.py](file:///c:/Users/sk4rf/OneDrive/Documentos/Softwares/Repositorios/squishy-converter/squishy/blueprints/ui.py)
+- New route `/batch/transcode` (POST).
+- Accepts JSON: `{ media_ids: [...], preset_name: "..." }`.
+- Iterates and creates jobs.
+- Flashes summary ("Started X jobs").
+
+## User Review Required
+- The batch operation might queue many jobs. Ensure `max_concurrent_jobs` logic in backend is robust (it is).
+
+## Verification Plan
+- Select multiple episodes -> Squish -> Verify multiple jobs in Jobs tab.
+- Squish Season -> Verify all episodes in season are queued.
 
 ### Funções a implementar:
 

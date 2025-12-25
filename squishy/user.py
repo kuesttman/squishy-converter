@@ -16,5 +16,15 @@ class User(UserMixin):
     def check_password(username, password):
         config = load_config()
         if username in config.auth_users:
-            return config.auth_users[username] == password
+            stored = config.auth_users[username]
+            try:
+                from werkzeug.security import check_password_hash
+                if check_password_hash(stored, password):
+                    return True
+            except (ValueError, TypeError):
+                # Fallback to plain text if not a valid hash
+                pass
+            
+            # Plain text check
+            return stored == password
         return False

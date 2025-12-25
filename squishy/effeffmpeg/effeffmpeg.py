@@ -1167,6 +1167,18 @@ def transcode(
     preserve_subtitles_val = preserve_subtitles or preset_config.get('preserve_subtitles', False)
     remove_attachments_val = remove_attachments or preset_config.get('remove_attachments', False)
 
+    # Handle High-Level Styles (overrides above)
+    audio_style = preset_config.get('audio_style')
+    if audio_style == 'copy':
+        preserve_all_audio_val = True
+        audio_codec_val = 'copy'
+    
+    subtitle_style = preset_config.get('subtitle_style')
+    if subtitle_style == 'copy':
+        preserve_subtitles_val = True
+    elif subtitle_style == 'none':
+        preserve_subtitles_val = False
+
     # Get hardware capabilities
     capabilities = None
     if capabilities_file and os.path.exists(capabilities_file):

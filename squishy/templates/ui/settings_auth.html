@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block title %}Squishy - Authentication Settings{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="page-header">
+        <h1>{% trans %}Authentication Settings{% endtrans %}</h1>
+        <p class="subtitle">{% trans %}Manage access control and users{% endtrans %}</p>
+    </div>
+
+    <div class="content-card">
+        <div class="section-title">
+            <h2>{% trans %}General Settings{% endtrans %}</h2>
+        </div>
+        
+        <form method="POST" action="{{ url_for('ui.settings_auth_update') }}" class="settings-form">
+            <div class="form-group checkbox-group">
+                <input type="checkbox" id="auth_enabled" name="auth_enabled" {% if config.auth_enabled %}checked{% endif %}>
+                <label for="auth_enabled">{% trans %}Enable Authentication{% endtrans %}</label>
+                <div class="help-text">{% trans %}If enabled, users will need to log in to access Squishy.{% endtrans %}</div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{% trans %}Save Changes{% endtrans %}</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="content-card">
+        <div class="section-title">
+            <h2>{% trans %}Users{% endtrans %}</h2>
+        </div>
+
+        {% if users %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>{% trans %}Username{% endtrans %}</th>
+                    <th>{% trans %}Actions{% endtrans %}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for username in users %}
+                <tr>
+                    <td>{{ username }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('ui.settings_auth_user_delete') }}" style="display:inline;">
+                            <input type="hidden" name="username" value="{{ username }}">
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('{% trans %}Are you sure?{% endtrans %}')">{% trans %}Remove{% endtrans %}</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <p>{% trans %}No users configured.{% endtrans %}</p>
+        </div>
+        {% endif %}
+
+        <div class="divider"></div>
+
+        <h3>{% trans %}Add User{% endtrans %}</h3>
+        <form method="POST" action="{{ url_for('ui.settings_auth_user_add') }}" class="settings-form inline-form">
+            <div class="form-group">
+                <label for="new_username">{% trans %}Username{% endtrans %}</label>
+                <input type="text" id="new_username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="new_password">{% trans %}Password{% endtrans %}</label>
+                <input type="password" id="new_password" name="password" required>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn btn-secondary">{% trans %}Add User{% endtrans %}</button>
+            </div>
+        </form>
+    </div>
+    
+    <div class="back-link">
+        <a href="{{ url_for('ui.index') }}" class="btn btn-text">&larr; {% trans %}Back to Dashboard{% endtrans %}</a>
+    </div>
+</div>
+
+<style>
+    .settings-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .content-card {
+        background: var(--card-bg, #fff);
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .section-title h2 {
+        margin-top: 0;
+        border-bottom: 2px solid var(--primary-color, #6c5ce7);
+        padding-bottom: 10px;
+        display: inline-block;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .checkbox-group input {
+        margin-right: 10px;
+        width: 20px;
+        height: 20px;
+    }
+    .help-text {
+        width: 100%;
+        color: #666;
+        font-size: 0.9em;
+        margin-top: 5px;
+        margin-left: 30px;
+    }
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    .data-table th, .data-table td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+    .inline-form {
+        display: flex;
+        gap: 15px;
+        align-items: flex-end;
+    }
+    .inline-form .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+    .btn-danger {
+        background-color: #ff7675;
+        color: white;
+    }
+    .btn-secondary {
+        background-color: #a29bfe;
+        color: white;
+    }
+</style>
+{% endblock %}
