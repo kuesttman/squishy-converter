@@ -111,4 +111,4 @@ fi
 
 # Switch to squishy user and run the application
 echo "Starting as squishy user..."
-exec su -s /bin/bash squishy -c "LIBVA_DRIVER_NAME=iHD python /app/run.py"
+exec su -s /bin/bash squishy -c "PATH=/app/.local/bin:\$PATH LIBVA_DRIVER_NAME=iHD python /app/run.py"
