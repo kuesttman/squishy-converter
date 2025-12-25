@@ -20,8 +20,14 @@ if __name__ == "__main__":
     log_level = os.environ.get("LOG_LEVEL", config.log_level).upper()
     logging.basicConfig(
         level=getattr(logging, log_level),
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+        format="[%(levelname)s] %(asctime)s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
     )
+    
+    # Log startup information
+    logging.info(f"🚀 Squishy starting with log level: {log_level}")
+    logging.info(f"📁 Media path: {config.media_path}")
+    logging.info(f"🔒 Auth enabled: {config.auth_enabled}")
 
     # Start the app
     main()

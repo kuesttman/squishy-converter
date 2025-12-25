@@ -899,3 +899,31 @@ def save_hw_capabilities():
 
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+
+@admin_bp.route("/update_automation", methods=["POST"])
+def update_automation():
+    """Update automation settings."""
+    config = load_config()
+
+    try:
+        # Get form data
+        auto_scan_interval = int(request.form.get("auto_scan_interval", 0))
+        auto_squish_enabled = request.form.get("auto_squish_enabled") == "on"
+        auto_squish_preset = request.form.get("auto_squish_preset")
+
+        # Update config
+        config.auto_scan_interval = auto_scan_interval
+        config.auto_squish_enabled = auto_squish_enabled
+        config.auto_squish_preset = auto_squish_preset if auto_squish_preset else None
+
+        save_config(config)
+        flash("Automation settings updated")
+
+    except ValueError:
+        flash("Invalid value for auto scan interval")
+    except Exception as e:
+        current_app.logger.error(f"Error updating automation settings: {e}")
+        flash(f"Error updating automation settings: {str(e)}")
+
+    return redirect(url_for("admin.index"))

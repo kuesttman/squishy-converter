@@ -17,6 +17,7 @@ from squishy.effeffmpeg.effeffmpeg import (
     get_file_info,
     detect_capabilities,
 )
+from squishy.scanner import notify_media_server
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -292,6 +293,14 @@ def _run_job_logic(app, job_id, output_dir):
                 job.output_size = str(os.path.getsize(output_path))
 
             db.session.commit()
+            
+            # Notify media server to re-scan
+            # We do this asynchronously to not block the next job? 
+            # Ideally yes, but the function uses simple requests call, so it's fast enough.
+            try:
+                notify_media_server(config)
+            except Exception as notify_err:
+                logger.error(f"Failed to notify media server: {notify_err}")
             
             # Trigger next job
             process_job_queue()

@@ -42,6 +42,38 @@
   --success-color: rgb(20, 176, 161);
   --warning-color: rgb(255, 202, 28);
   --error-color: rgb(237, 56, 118);
+  --bg-color: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --card-bg: #ffffff;
+  --border-color: #ddd;
+  --input-bg: #ffffff;
+  --header-text: var(--accent-color);
+}
+
+/* Dark Theme - System Preference Detection */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg-color: #1a1a2e;
+    --bg-secondary: #16213e;
+    --card-bg: #0f3460;
+    --text-color: #e0e0e0;
+    --border-color: #2a3f5f;
+    --input-bg: #16213e;
+    --light-color: #1a1a2e;
+    --header-text: #ffffff;
+  }
+}
+
+/* Dark Theme - Manual Toggle */
+[data-theme="dark"] {
+  --bg-color: #1a1a2e;
+  --bg-secondary: #16213e;
+  --card-bg: #0f3460;
+  --text-color: #e0e0e0;
+  --border-color: #2a3f5f;
+  --input-bg: #16213e;
+  --light-color: #1a1a2e;
+  --header-text: #ffffff;
 }
 
 /* ========================================================================== */
@@ -58,7 +90,8 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
   color: var(--text-color);
-  background-color: var(--light-color);
+  background-color: var(--bg-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 a {
@@ -123,7 +156,8 @@ h2 {
 
 .container {
   max-width: 1200px;
-  margin: 10rem auto; /* Increased from 8rem to 10rem for more space */
+  margin: 10rem auto;
+  /* Increased from 8rem to 10rem for more space */
   padding: 0 2rem;
 }
 
@@ -149,7 +183,8 @@ nav {
   align-items: center;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0rem 2rem; /* Added vertical padding for more space */
+  padding: 0rem 2rem;
+  /* Added vertical padding for more space */
 }
 
 .logo a {
@@ -182,6 +217,7 @@ nav ul li.active {
   background-color: var(--accent-color);
   padding: 1px 1rem;
 }
+
 nav ul li.active a {
   color: white;
 }
@@ -461,11 +497,11 @@ input[type="password"] {
   transition: .3s;
 }
 
-input:checked + .toggle-slider {
+input:checked+.toggle-slider {
   background-color: var(--success-color);
 }
 
-input:checked + .toggle-slider:before {
+input:checked+.toggle-slider:before {
   transform: translateX(20px);
 }
 
@@ -593,7 +629,8 @@ thead {
   font-weight: 600;
 }
 
-th, td {
+th,
+td {
   padding: 1rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
@@ -692,17 +729,22 @@ tbody tr:hover {
 
 .media-card img {
   width: 100%;
-  aspect-ratio: 2/3; /* Standard movie poster aspect ratio */
-  object-fit: cover; /* Use cover for consistent look */
-  object-position: center top; /* Focus on top of poster which usually has faces/title */
+  aspect-ratio: 2/3;
+  /* Standard movie poster aspect ratio */
+  object-fit: cover;
+  /* Use cover for consistent look */
+  object-position: center top;
+  /* Focus on top of poster which usually has faces/title */
   display: block;
-  background-color: #eee; /* Add background for transparent posters */
+  background-color: #eee;
+  /* Add background for transparent posters */
 }
 
 .placeholder-poster {
   background-color: var(--secondary-color);
   width: 100%;
-  aspect-ratio: 2/3; /* Match the image aspect ratio */
+  aspect-ratio: 2/3;
+  /* Match the image aspect ratio */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1110,15 +1152,18 @@ tbody tr:hover {
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   background-color: white;
-  height: 160px; /* Fixed height for consistent card sizing */
+  height: 160px;
+  /* Fixed height for consistent card sizing */
 }
 
 .episode-artwork {
-  width: 280px; /* Increased width for better aspect ratio */
+  width: 280px;
+  /* Increased width for better aspect ratio */
   height: 100%;
   overflow: hidden;
   background-color: #f5f5f5;
-  flex-shrink: 0; /* Prevent artwork from shrinking */
+  flex-shrink: 0;
+  /* Prevent artwork from shrinking */
 }
 
 .episode-artwork img {
@@ -1148,10 +1193,12 @@ tbody tr:hover {
 .episode-content {
   flex: 1;
   padding: 1rem;
-  min-width: 0; /* Ensures text wrapping */
+  min-width: 0;
+  /* Ensures text wrapping */
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* Prevent content overflow */
+  overflow: hidden;
+  /* Prevent content overflow */
 }
 
 .episode-title {
@@ -1169,10 +1216,12 @@ tbody tr:hover {
   color: #555;
   font-size: 0.9rem;
   line-height: 1.4;
-  flex: 1; /* Allow description to take available space */
+  flex: 1;
+  /* Allow description to take available space */
   /* Multi-line ellipsis for long descriptions */
   display: -webkit-box;
-  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-line-clamp: 3;
+  /* Limit to 3 lines */
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1191,7 +1240,8 @@ tbody tr:hover {
   padding: 1rem;
   border-left: 1px solid #eee;
   min-width: 120px;
-  flex-shrink: 0; /* Prevent shrinking */
+  flex-shrink: 0;
+  /* Prevent shrinking */
 }
 
 .tech-info-btn,
@@ -1400,7 +1450,8 @@ progress {
 
 .profiles-list .actions {
   display: flex;
-  justify-content: right; /* Align items horizontally */
+  justify-content: right;
+  /* Align items horizontally */
   margin-top: 1.5rem;
 }
 
@@ -1827,7 +1878,8 @@ progress {
 
 /* Flash messages (legacy - will be removed) */
 .flash {
-  display: none; /* Hide traditional flash messages since we're using notifications now */
+  display: none;
+  /* Hide traditional flash messages since we're using notifications now */
 }
 
 /* Notifications */
@@ -1897,9 +1949,19 @@ progress {
 }
 
 @keyframes mascot-bounce {
-  0% { transform: scale(0.5); opacity: 0; }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+
+  50% {
+    transform: scale(1.1);
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* Custom tooltip solution */
@@ -2214,26 +2276,48 @@ progress {
 }
 
 @media (max-width: 768px) {
+
   /* Layout adjustments */
   .container {
     padding: 0 1rem;
-    margin-top: 6.5rem; /* Increased to accommodate larger logo */
-    margin-bottom: 2rem; /* Added for better spacing at the bottom */
+    margin-top: 6.5rem;
+    /* Increased to accommodate larger logo */
+    margin-bottom: 2rem;
+    /* Added for better spacing at the bottom */
   }
 
   /* Tables responsive styles */
-  th, td {
+  th,
+  td {
     padding: 0.5rem;
-    min-width: 100px; /* Ensure columns have minimum width on mobile */
+    min-width: 100px;
+    /* Ensure columns have minimum width on mobile */
   }
 
   /* Column widths for jobs table */
-  .col-media { min-width: 180px; }
-  .col-size { min-width: 100px; }
-  .col-preset { min-width: 110px; }
-  .col-status { min-width: 100px; }
-  .col-progress { min-width: 120px; }
-  .col-actions { min-width: 100px; }
+  .col-media {
+    min-width: 180px;
+  }
+
+  .col-size {
+    min-width: 100px;
+  }
+
+  .col-preset {
+    min-width: 110px;
+  }
+
+  .col-status {
+    min-width: 100px;
+  }
+
+  .col-progress {
+    min-width: 120px;
+  }
+
+  .col-actions {
+    min-width: 100px;
+  }
 
   /* Optimize progress bar display */
   .progress-container {
@@ -2245,30 +2329,39 @@ progress {
   }
 
   progress {
-    height: 6px; /* Smaller height on mobile */
+    height: 6px;
+    /* Smaller height on mobile */
   }
 
   .progress-text {
-    font-size: 0.55rem; /* Smaller font on mobile */
-    min-width: 2.5em; /* Smaller width on mobile */
+    font-size: 0.55rem;
+    /* Smaller font on mobile */
+    min-width: 2.5em;
+    /* Smaller width on mobile */
   }
 
   .progress-time {
-    font-size: 0.55rem; /* Smaller font on mobile */
+    font-size: 0.55rem;
+    /* Smaller font on mobile */
   }
 
   .action-buttons-container {
-    gap: 0.25rem; /* Smaller gap on mobile */
+    gap: 0.25rem;
+    /* Smaller gap on mobile */
   }
 
   .circle-button {
-    width: 2rem; /* Smaller button on mobile */
-    height: 2rem; /* Smaller button on mobile */
+    width: 2rem;
+    /* Smaller button on mobile */
+    height: 2rem;
+    /* Smaller button on mobile */
   }
 
   .circle-button img {
-    width: 16px; /* Smaller icon on mobile */
-    height: 16px; /* Smaller icon on mobile */
+    width: 16px;
+    /* Smaller icon on mobile */
+    height: 16px;
+    /* Smaller icon on mobile */
   }
 
   /* Responsive cell content */
@@ -2281,15 +2374,18 @@ progress {
 
   /* Navigation */
   header {
-    height: 55px; /* Set specific height for mobile header */
+    height: 55px;
+    /* Set specific height for mobile header */
     padding: 0;
   }
 
   nav {
     padding: 0;
     position: relative;
-    height: 55px; /* Match header height */
-    justify-content: center; /* Center nav items */
+    height: 55px;
+    /* Match header height */
+    justify-content: center;
+    /* Center nav items */
   }
 
   .logo {
@@ -2298,7 +2394,8 @@ progress {
 
   .logo img {
     position: absolute;
-    height: 80px; /* Increased from 40px to match desktop style */
+    height: 80px;
+    /* Increased from 40px to match desktop style */
     top: 0;
     left: 20px;
     z-index: 1002;
@@ -2308,12 +2405,14 @@ progress {
     display: block;
     position: absolute;
     right: 15px;
-    top: 6px; /* Adjusted from 12px to move it up */
+    top: 6px;
+    /* Adjusted from 12px to move it up */
   }
 
   .nav-menu {
     position: absolute;
-    top: 55px; /* Align with bottom of the header */
+    top: 55px;
+    /* Align with bottom of the header */
     left: 0;
     width: 100%;
     flex-direction: column;
@@ -2329,7 +2428,8 @@ progress {
   }
 
   .nav-menu.open {
-    max-height: 300px; /* Enough height for all menu items */
+    max-height: 300px;
+    /* Enough height for all menu items */
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   }
 
@@ -2369,7 +2469,8 @@ progress {
   }
 
   /* Tables */
-  th, td {
+  th,
+  td {
     padding: 0.5rem;
   }
 
@@ -2397,13 +2498,15 @@ progress {
   /* Episode rows */
   .episode-row {
     flex-direction: column;
-    height: auto; /* Reset fixed height on mobile */
+    height: auto;
+    /* Reset fixed height on mobile */
     max-height: none;
   }
 
   .episode-artwork {
     width: 100%;
-    height: 180px; /* Taller on mobile for better viewing */
+    height: 180px;
+    /* Taller on mobile for better viewing */
   }
 
   .episode-actions {
@@ -2500,18 +2603,35 @@ progress {
 /* ========================================================================== */
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slide-up {
@@ -2519,6 +2639,7 @@ progress {
     transform: translateY(100%);
     opacity: 0;
   }
+
   100% {
     transform: translateY(0);
     opacity: 1;
@@ -2529,6 +2650,7 @@ progress {
   0% {
     opacity: 1;
   }
+
   100% {
     opacity: 0;
   }
@@ -2536,41 +2658,108 @@ progress {
 
 /* Mascot animations */
 @keyframes slide-in-from-left {
-  0% { transform: translateX(-150px); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateX(0); opacity: 1; }
+  0% {
+    transform: translateX(-150px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-from-right {
-  0% { transform: translateX(150px); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateX(0); opacity: 1; }
+  0% {
+    transform: translateX(150px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-from-top {
-  0% { transform: translateY(-150px); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(-150px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes slide-in-from-bottom {
-  0% { transform: translateY(150px); opacity: 0; }
-  20% { opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(150px);
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-30px); }
-  60% { transform: translateY(-15px); }
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-30px);
+  }
+
+  60% {
+    transform: translateY(-15px);
+  }
 }
 
 @keyframes sway {
-  0% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  50% { transform: rotate(0deg); }
-  75% { transform: rotate(5deg); }
-  100% { transform: rotate(0deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-5deg);
+  }
+
+  50% {
+    transform: rotate(0deg);
+  }
+
+  75% {
+    transform: rotate(5deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
 }
 
 /* Mascot container styling */
@@ -2581,7 +2770,8 @@ progress {
   width: 150px;
   height: 150px;
   z-index: 999;
-  pointer-events: none; /* Allow clicks to pass through */
+  pointer-events: none;
+  /* Allow clicks to pass through */
 }
 
 #mascot-image {
@@ -2624,6 +2814,7 @@ progress {
   from {
     opacity: 1;
   }
+
   to {
     opacity: 0;
   }
@@ -2631,15 +2822,32 @@ progress {
 
 /* Tilting animation for logo and mascot */
 @keyframes tiltLeftRight {
-  0%, 100% { transform: rotate(0deg); }
-  25% { transform: rotate(-5deg); }
-  75% { transform: rotate(5deg); }
+
+  0%,
+  100% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(-5deg);
+  }
+
+  75% {
+    transform: rotate(5deg);
+  }
 }
 
 /* Zoom animation for logo and mascot */
 @keyframes pulseZoom {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 /* Combined tilt and zoom animation */
@@ -2648,6 +2856,7 @@ progress {
     opacity: 0;
     transform: scale(0.5);
   }
+
   100% {
     opacity: 1;
     transform: scale(1);
@@ -2655,12 +2864,16 @@ progress {
 }
 
 @keyframes tiltAndZoom {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: rotate(0deg) scale(1);
   }
+
   25% {
     transform: rotate(-5deg) scale(1.03);
   }
+
   75% {
     transform: rotate(5deg) scale(1.03);
   }
@@ -2757,10 +2970,24 @@ progress {
 }
 
 @keyframes dots {
-  0%, 20% { content: '.'; }
-  40% { content: '..'; }
-  60% { content: '...'; }
-  80%, 100% { content: ''; }
+
+  0%,
+  20% {
+    content: '.';
+  }
+
+  40% {
+    content: '..';
+  }
+
+  60% {
+    content: '...';
+  }
+
+  80%,
+  100% {
+    content: '';
+  }
 }
 
 .fade-out {

@@ -1,4 +1,275 @@
+# Traduções PT-BR para Squishy Media Converter
 msgid ""
 msgstr ""
+"Project-Id-Version: Squishy 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-01-01 00:00+0000\n"
+"PO-Revision-Date: 2024-12-25 00:00-0300\n"
+"Last-Translator: Squishy Team\n"
+"Language-Team: Portuguese (Brazil)\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+# Navigation
+msgid "Library"
+msgstr "Biblioteca"
+
+msgid "Jobs"
+msgstr "Trabalhos"
+
+msgid "Admin"
+msgstr "Admin"
+
+msgid "Settings"
+msgstr "Configurações"
+
+msgid "Logout"
+msgstr "Sair"
+
+msgid "Login"
+msgstr "Entrar"
+
+# Library
+msgid "Media Library"
+msgstr "Biblioteca de Mídia"
+
+msgid "Movies"
+msgstr "Filmes"
+
+msgid "TV Shows"
+msgstr "Séries"
+
+msgid "Search"
+msgstr "Buscar"
+
+msgid "Scan"
+msgstr "Escanear"
+
+msgid "Scan Library"
+msgstr "Escanear Biblioteca"
+
+# Media Details
+msgid "Transcode"
+msgstr "Transcodificar"
+
+msgid "Start Transcode"
+msgstr "Iniciar Transcodificação"
+
+msgid "Select Preset"
+msgstr "Selecionar Preset"
+
+msgid "File Info"
+msgstr "Info do Arquivo"
+
+msgid "Video"
+msgstr "Vídeo"
+
+msgid "Audio"
+msgstr "Áudio"
+
+msgid "Subtitles"
+msgstr "Legendas"
+
+msgid "Duration"
+msgstr "Duração"
+
+msgid "Size"
+msgstr "Tamanho"
+
+msgid "Resolution"
+msgstr "Resolução"
+
+# Jobs
+msgid "Active Jobs"
+msgstr "Trabalhos Ativos"
+
+msgid "Job History"
+msgstr "Histórico de Trabalhos"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Progress"
+msgstr "Progresso"
+
+msgid "Cancel"
+msgstr "Cancelar"
+
+msgid "Remove"
+msgstr "Remover"
+
+msgid "pending"
+msgstr "pendente"
+
+msgid "processing"
+msgstr "processando"
+
+msgid "completed"
+msgstr "concluído"
+
+msgid "failed"
+msgstr "falhou"
+
+msgid "cancelled"
+msgstr "cancelado"
+
+# Admin
+msgid "Dashboard"
+msgstr "Painel"
+
+msgid "Configuration"
+msgstr "Configuração"
+
+msgid "Media Server"
+msgstr "Servidor de Mídia"
+
+msgid "Jellyfin URL"
+msgstr "URL do Jellyfin"
+
+msgid "API Key"
+msgstr "Chave de API"
+
+msgid "Test Connection"
+msgstr "Testar Conexão"
+
+msgid "Save"
+msgstr "Salvar"
+
+msgid "Save Settings"
+msgstr "Salvar Configurações"
+
+msgid "Hardware Acceleration"
+msgstr "Aceleração de Hardware"
+
+msgid "Detect"
+msgstr "Detectar"
+
+msgid "Presets"
+msgstr "Presets"
+
+msgid "Add Preset"
+msgstr "Adicionar Preset"
+
+msgid "Edit"
+msgstr "Editar"
+
+msgid "Delete"
+msgstr "Excluir"
+
+msgid "Path Mappings"
+msgstr "Mapeamento de Caminhos"
+
+# Authentication
+msgid "Authentication"
+msgstr "Autenticação"
+
+msgid "Enable Authentication"
+msgstr "Habilitar Autenticação"
+
+msgid "Username"
+msgstr "Usuário"
+
+msgid "Password"
+msgstr "Senha"
+
+msgid "Add User"
+msgstr "Adicionar Usuário"
+
+msgid "Users"
+msgstr "Usuários"
+
+# Batch Operations
+msgid "Select All"
+msgstr "Selecionar Tudo"
+
+msgid "Select Season"
+msgstr "Selecionar Temporada"
+
+msgid "Batch Transcode"
+msgstr "Transcodificação em Lote"
+
+msgid "selected"
+msgstr "selecionado(s)"
+
+# Automation
+msgid "Automation"
+msgstr "Automação"
+
+msgid "Auto Scan Interval"
+msgstr "Intervalo de Auto Scan"
+
+msgid "Enable Auto Squish"
+msgstr "Habilitar Auto Squish"
+
+msgid "Auto Squish Preset"
+msgstr "Preset de Auto Squish"
+
+msgid "minutes"
+msgstr "minutos"
+
+# Theme
+msgid "Dark Mode"
+msgstr "Modo Escuro"
+
+msgid "Light Mode"
+msgstr "Modo Claro"
+
+# Messages
+msgid "Success"
+msgstr "Sucesso"
+
+msgid "Error"
+msgstr "Erro"
+
+msgid "Warning"
+msgstr "Aviso"
+
+msgid "No media items found"
+msgstr "Nenhum item de mídia encontrado"
+
+msgid "Scan in progress"
+msgstr "Escaneamento em progresso"
+
+msgid "Scan complete"
+msgstr "Escaneamento concluído"
+
+msgid "Connection successful"
+msgstr "Conexão bem-sucedida"
+
+msgid "Connection failed"
+msgstr "Conexão falhou"
+
+msgid "Settings saved"
+msgstr "Configurações salvas"
+
+# Show Details
+msgid "Season"
+msgstr "Temporada"
+
+msgid "Episode"
+msgstr "Episódio"
+
+msgid "Episodes"
+msgstr "Episódios"
+
+msgid "Back"
+msgstr "Voltar"
+
+# General
+msgid "items"
+msgstr "itens"
+
+msgid "Loading"
+msgstr "Carregando"
+
+msgid "Year"
+msgstr "Ano"
+
+msgid "Codec"
+msgstr "Codec"
+
+msgid "Actions"
+msgstr "Ações"

@@ -35,5 +35,12 @@ def logout():
 @auth_bp.route('/set_language/<language>')
 def set_language(language):
     session['language'] = language
-    # Persist specific language choice if user is authenticated (optional, for now just session)
+    # Persist language choice to config
+    try:
+        from squishy.config import load_config, save_config
+        config = load_config()
+        config.language = language
+        save_config(config)
+    except Exception as e:
+        pass  # Silently fail - session storage is still functional
     return redirect(request.referrer or url_for('ui.index'))

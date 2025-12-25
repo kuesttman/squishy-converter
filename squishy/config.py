@@ -26,15 +26,20 @@ class Config:
     hw_device: Optional[str] = None  # Global hardware acceleration device
     hw_capabilities: Optional[Dict[str, Any]] = None  # Hardware capabilities JSON data
     enabled_libraries: Dict[str, bool] = None  # Dictionary of library_id -> enabled status
-    log_level: str = "INFO"  # Application log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+    log_level: str = "DEBUG"  # Application log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
     secret_key: Optional[str] = None  # Flask session secret key
     auth_users: Dict[str, str] = None  # Username -> Password
-    auth_enabled: bool = False  # Enable/Disable authentication
+    auth_enabled: bool = True  # Enable/Disable authentication (default True for security)
     language: str = "pt_BR"  # Default language
     output_to_source: bool = False  # If True, output file is moved to the source directory
     delete_original: bool = False # If True, original file is deleted after successful transcode
     move_original_to: Optional[str] = None # Path to move original file to (instead of deleting)
     rename_suffix: Optional[str] = None # Suffix format (e.g. ".{res}")
+    
+    # Automation settings
+    auto_scan_interval: int = 0  # Interval in minutes, 0 = disabled
+    auto_squish_enabled: bool = False # Enable auto-transcode after scan
+    auto_squish_preset: Optional[str] = None # Preset to use for auto-transcode
     
     def __post_init__(self):
         """Ensure dictionaries are initialized."""
@@ -218,6 +223,9 @@ def load_config(config_path: str = None) -> Config:
         delete_original=config_data.get("delete_original", False),
         move_original_to=config_data.get("move_original_to"),
         rename_suffix=config_data.get("rename_suffix", ".{res}"),
+        auto_scan_interval=config_data.get("auto_scan_interval", 0),
+        auto_squish_enabled=config_data.get("auto_squish_enabled", False),
+        auto_squish_preset=config_data.get("auto_squish_preset"),
     )
 
 
@@ -255,6 +263,9 @@ def save_config(config: Config, config_path: str = None) -> None:
         "delete_original": config.delete_original,
         "move_original_to": config.move_original_to,
         "rename_suffix": config.rename_suffix,
+        "auto_scan_interval": config.auto_scan_interval,
+        "auto_squish_enabled": config.auto_squish_enabled,
+        "auto_squish_preset": config.auto_squish_preset,
     }
 
     # Only include one source configuration

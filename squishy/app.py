@@ -155,6 +155,10 @@ def create_app(test_config=None):
     # Perform initial scan if media server is configured and not in first run
     if not test_config and not is_first_run():  # Skip scan during testing or first run
         perform_initial_scan(config)
+        
+        # Start Automation Scheduler
+        from squishy.scheduler import start_scheduler
+        start_scheduler(app)
 
     return app
 

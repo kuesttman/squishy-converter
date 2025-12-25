@@ -102,6 +102,46 @@
         </div>
     </div>
 
+    <div class="admin-section">
+        <h2>Automation</h2>
+        <div class="card">
+            <form action="{{ url_for('admin.update_automation') }}" method="post">
+                <div class="form-group">
+                    <label for="auto_scan_interval">Auto-Scan Interval (minutes)</label>
+                    <input type="number" id="auto_scan_interval" name="auto_scan_interval"
+                        value="{{ config.auto_scan_interval }}" min="0">
+                    <p class="help-text">Set to 0 to disable automatic scanning.</p>
+                </div>
+
+                <div class="form-group checkbox-group">
+                    <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
+                        <input type="checkbox" id="auto_squish_enabled" name="auto_squish_enabled" {% if
+                            config.auto_squish_enabled %}checked{% endif %} style="margin-right: 0.5rem;">
+                        <label for="auto_squish_enabled" style="margin-bottom: 0;">Enable Auto-Squish</label>
+                    </div>
+                    <p class="help-text">Automatically transcode new media found during scan.</p>
+                </div>
+
+                <div class="form-group">
+                    <label for="auto_squish_preset">Auto-Squish Preset</label>
+                    <select id="auto_squish_preset" name="auto_squish_preset">
+                        <option value="">Select a preset...</option>
+                        {% for name, preset in config.presets.items() %}
+                        <option value="{{ name }}" {% if config.auto_squish_preset==name %}selected{% endif %}>
+                            {{ name.replace('-', ' ').title() }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    <p class="help-text">The preset to use for automatically transcoded media.</p>
+                </div>
+
+                <div class="form-submit">
+                    <button type="submit" class="button">Save Automation Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="admin-section" id="path-config">
         <h2>Path Configuration</h2>
         <div class="card">
@@ -322,7 +362,8 @@
                     <h3>Current Hardware Capabilities</h3>
                     <p class="help-text">These hardware acceleration capabilities are currently configured in Squishy.
                         <strong>Advanced users only:</strong> You can edit this configuration if you need to make manual
-                        adjustments.</p>
+                        adjustments.
+                    </p>
 
                     <textarea id="capabilities-json-content" rows="12"
                         style="width: 100%; font-family: monospace; font-size: 0.9rem;"

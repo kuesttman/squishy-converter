@@ -171,6 +171,14 @@ class PlexScanner(MediaServerScanner):
         """Get headers for Plex API requests."""
         return {"X-Plex-Token": self.token, "Accept": "application/json"}
 
+
+    def get_stable_id(self, key: str) -> str:
+        """Generate a stable UUID based on the item key."""
+        # Use UUID5 with a custom namespace based on the server URL and key
+        # This ensures the same item from the same server always gets the same ID
+        namespace = uuid.uuid5(uuid.NAMESPACE_URL, self.url)
+        return str(uuid.uuid5(namespace, str(key)))
+
     def process_movie(self, movie_item: Dict) -> Optional[Movie]:
         """Process a single Plex movie item and return a Movie object if valid."""
         try:
@@ -201,7 +209,8 @@ class PlexScanner(MediaServerScanner):
                 self.stats["path_not_found"] += 1
                 return None
 
-            media_id = str(uuid.uuid4())
+            # Use stable ID based on ratingKey
+            media_id = self.get_stable_id(movie_item.get("ratingKey"))
 
             # Extract directors, actors, genres
             directors = []
@@ -270,7 +279,7 @@ class PlexScanner(MediaServerScanner):
             if not show_key:
                 return None
 
-            show_id = str(uuid.uuid4())
+            show_id = self.get_stable_id(show_key)
 
             # Extract genres, directors/creators, actors
             genres = []
@@ -369,7 +378,7 @@ class PlexScanner(MediaServerScanner):
                     return None
 
                 # Create a unique ID for this episode
-                media_id = str(uuid.uuid4())
+                media_id = self.get_stable_id(episode_item.get("ratingKey"))
 
                 # Create an Episode instance (inherits from MediaItem)
                 episode = Episode(
@@ -720,20 +729,31 @@ class JellyfinScanner(MediaServerScanner):
             for library in libraries:
                 library_id = library.get("ItemId")
                 if library_id:
-                    # Check if this library is enabled (only if explicitly True)
-                    if (
-                        library_id in self.config.enabled_libraries
-                        and self.config.enabled_libraries.get(library_id) is True
-                    ):
+                    # If enabled_libraries is empty, include ALL libraries by default
+                    # Otherwise, only include if explicitly set to True
+                    if not self.config.enabled_libraries:
+                        # No libraries configured - include all
                         enabled_library_ids.append(library_id)
-                        logging.debug(
-                            f"Including enabled Jellyfin library: {library.get('Name', 'Unknown')} (id: {library_id})"
+                        logging.info(
+                            f"Including Jellyfin library (auto-enabled): {library.get('Name', 'Unknown')} (id: {library_id})"
                         )
+                    elif library_id in self.config.enabled_libraries:
+                        if self.config.enabled_libraries.get(library_id) is True:
+                            enabled_library_ids.append(library_id)
+                            logging.info(
+                                f"Including enabled Jellyfin library: {library.get('Name', 'Unknown')} (id: {library_id})"
+                            )
+                        else:
+                            logging.debug(
+                                f"Skipping disabled Jellyfin library: {library.get('Name', 'Unknown')} (id: {library_id})"
+                            )
+                            self.stats["skipped_libraries"] += 1
                     else:
-                        logging.debug(
-                            f"Skipping disabled Jellyfin library: {library.get('Name', 'Unknown')} (id: {library_id})"
+                        # Library not in config - include by default
+                        enabled_library_ids.append(library_id)
+                        logging.info(
+                            f"Including Jellyfin library (not configured, defaulting to enabled): {library.get('Name', 'Unknown')} (id: {library_id})"
                         )
-                        self.stats["skipped_libraries"] += 1
 
         return enabled_library_ids
 
@@ -781,7 +801,7 @@ class JellyfinScanner(MediaServerScanner):
 
         for item in movie_items:
             if "Path" in item:
-                media_id = str(uuid.uuid4())
+                media_id = item.get("Id") or str(uuid.uuid4())
 
                 # Apply path mapping to convert media server path to local path
                 mapped_path = apply_path_mapping(item["Path"])
@@ -886,7 +906,7 @@ class JellyfinScanner(MediaServerScanner):
 
         for item in series_items:
             series_id = item["Id"]
-            show_id = str(uuid.uuid4())
+            show_id = item.get("Id") or str(uuid.uuid4())
 
             # Extract directors and actors
             creators = []
@@ -991,7 +1011,7 @@ class JellyfinScanner(MediaServerScanner):
 
         for item in episode_items:
             if "Path" in item and "SeriesId" in item:
-                media_id = str(uuid.uuid4())
+                media_id = item.get("Id") or str(uuid.uuid4())
                 series_id = item["SeriesId"]
 
                 # Apply path mapping to convert media server path to local path
@@ -1320,3 +1340,50 @@ def get_plex_libraries(url: str, token: str) -> List[Dict[str, Any]]:
     """
     scanner = PlexScanner(url, token)
     return scanner.get_libraries()
+
+
+def notify_media_server(config) -> bool:
+    """
+    Notify the media server to rescan its library.
+    Returns True if successful, False otherwise.
+    """
+    try:
+        # Jellyfin
+        if config.jellyfin_url and config.jellyfin_api_key:
+            logging.info("Notifying Jellyfin to refresh library...")
+            headers = {
+                "X-MediaBrowser-Token": config.jellyfin_api_key,
+                "Content-Type": "application/json",
+            }
+            # Refresh all libraries
+            response = requests.post(
+                f"{config.jellyfin_url}/Library/Refresh", headers=headers
+            )
+            if response.status_code == 204:
+                logging.info("Jellyfin refresh triggered successfully.")
+                return True
+            else:
+                logging.warning(
+                    f"Failed to trigger Jellyfin refresh: {response.status_code} {response.text}"
+                )
+
+        # Plex
+        elif config.plex_url and config.plex_token:
+            logging.info("Notifying Plex to refresh library sections...")
+            headers = {"X-Plex-Token": config.plex_token}
+            # Refresh all sections
+            response = requests.get(
+                f"{config.plex_url}/library/sections/all/refresh", headers=headers
+            )
+            if response.status_code == 200:
+                logging.info("Plex refresh triggered successfully.")
+                return True
+            else:
+                logging.warning(
+                    f"Failed to trigger Plex refresh: {response.status_code} {response.text}"
+                )
+    
+    except Exception as e:
+        logging.error(f"Error notifying media server: {e}")
+    
+    return False

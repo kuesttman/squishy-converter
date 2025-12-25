@@ -65,6 +65,13 @@
                                         <a href="{{ url_for('auth.set_language', language='pt_BR') }}"
                                             style="padding: 5px;">🇧🇷</a>
                                     </li>
+                                    <li class="theme-toggle" style="margin-left: 10px;">
+                                        <button onclick="toggleTheme()" id="theme-toggle-btn"
+                                            style="background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 5px;"
+                                            title="Toggle Dark Mode">
+                                            🌙
+                                        </button>
+                                    </li>
             </ul>
         </nav>
     </header>
@@ -108,6 +115,37 @@
             const newUrl = window.location.pathname;
             window.history.replaceState({}, document.title, newUrl);
         }
+    </script>
+
+    <!-- Theme Toggle Script -->
+    <script>
+        // Theme toggle functionality
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('squishy-theme', newTheme);
+
+            // Update button icon
+            const btn = document.getElementById('theme-toggle-btn');
+            if (btn) {
+                btn.innerHTML = newTheme === 'dark' ? '☀️' : '🌙';
+            }
+        }
+
+        // Initialize theme on page load
+        (function () {
+            const savedTheme = localStorage.getItem('squishy-theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+                const btn = document.getElementById('theme-toggle-btn');
+                if (btn) {
+                    btn.innerHTML = savedTheme === 'dark' ? '☀️' : '🌙';
+                }
+            }
+        })();
     </script>
 
     <!-- Core application scripts -->
