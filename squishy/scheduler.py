@@ -6,7 +6,7 @@ import logging
 from flask import Flask
 from squishy.config import load_config
 from squishy.scanner import scan_jellyfin, scan_plex, get_all_media, get_scan_status
-from squishy.transcoder import create_job
+from squishy.transcoder import create_job, calculate_output_path
 from squishy.models import TranscodeJob
 
 # Global scheduler thread reference
@@ -42,37 +42,71 @@ def _run_auto_squish(app: Flask):
     """Check for new media and queue transcode jobs."""
     with app.app_context():
         config = load_config()
-        if not config.auto_squish_enabled or not config.auto_squish_preset:
+        if not config.auto_squish_enabled:
             return
 
         app.logger.debug("Auto-Squish: Checking for untranscoded media...")
         
-        # Get all media currently known (from recent scan)
+        # Get all media currently known
         all_media = get_all_media()
         
-        # Pre-fetch all existing job media IDs to avoid N+1 queries
-        # Get all distinct media_ids from TranscodeJob that have ANY job
-        existing_job_media_ids = set(
-            [job.media_id for job in TranscodeJob.query.with_entities(TranscodeJob.media_id).all()]
-        )
-        # Handle tuple results if dependent on SQLAlchemy version/query style
-        existing_job_media_ids = {mid[0] if isinstance(mid, tuple) else mid for mid in existing_job_media_ids if mid}
+        # Get all existing jobs (media_id, output_path)
+        # We fetch all jobs to check against specific output paths
+        existing_jobs = TranscodeJob.query.with_entities(TranscodeJob.media_id, TranscodeJob.output_path).all()
+        existing_job_map = set() # Set of (media_id, output_path)
+        existing_media_ids_simple = set() # Fallback for simple mode
+        
+        for mid, out_path in existing_jobs:
+            if out_path:
+                existing_job_map.add((mid, out_path))
+            existing_media_ids_simple.add(mid)
 
         items_queued = 0
 
+        # Determine versions to create
+        versions = config.versions or []
+        # Fallback to single preset if no versions defined but auto_squish_preset is set
+        if notVersions := (not versions and config.auto_squish_preset):
+             pass # Logic handled inside loop
+        
         for item in all_media:
-            # Skip if media ID already has a job
-            if item.id in existing_job_media_ids:
-                continue
-
-            app.logger.info(f"Auto-Squish: Queuing job for {item.title} ({item.id})")
+            jobs_to_create = []
             
-            try:
-                # Create job using the configured preset
-                create_job(item, config.auto_squish_preset)
-                items_queued += 1
-            except Exception as e:
-                app.logger.error(f"Failed to auto-squish {item.title}: {e}")
+            if versions:
+                # Multi-version mode
+                for version in versions:
+                    preset_name = version.get("preset")
+                    suffix = version.get("suffix")
+                    
+                    if not preset_name: 
+                        continue
+                        
+                    # Calculate expected path
+                    try:
+                        expected_path = calculate_output_path(item, preset_name, suffix)
+                        
+                        # Check if duplicate
+                        if (item.id, expected_path) in existing_job_map:
+                            continue
+                            
+                        jobs_to_create.append((preset_name, suffix))
+                    except Exception as ex:
+                        app.logger.error(f"Error calculating path for {item.title}: {ex}")
+            
+            elif config.auto_squish_preset:
+                # Simple mode (Backwards compatibility)
+                if item.id in existing_media_ids_simple:
+                    continue
+                jobs_to_create.append((config.auto_squish_preset, None))
+
+            # Create the jobs
+            for preset_name, suffix in jobs_to_create:
+                try:
+                    app.logger.info(f"Auto-Squish: Queuing job for {item.title} ({preset_name})")
+                    create_job(item, preset_name, suffix)
+                    items_queued += 1
+                except Exception as e:
+                    app.logger.error(f"Failed to auto-squish {item.title}: {e}")
 
         if items_queued > 0:
             app.logger.info(f"Auto-Squish: Queued {items_queued} new jobs.")

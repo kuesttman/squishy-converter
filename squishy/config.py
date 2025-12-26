@@ -33,9 +33,13 @@ class Config:
     language: str = "pt_BR"  # Default language
     output_to_source: bool = False  # If True, output file is moved to the source directory
     delete_original: bool = False # If True, original file is deleted after successful transcode
-    move_original_to: Optional[str] = None # Path to move original file to (instead of deleting)
-    rename_suffix: Optional[str] = None # Suffix format (e.g. ".{res}")
+    move_original_to: Optional[str] = None # Pós-processamento simples: Mover original para...
+    rename_suffix: Optional[str] = None # Pós-processamento simples: Renomear saída com sufixo
     
+    # Phase 2: Multi-Version Output
+    versions: list = None # List of dicts: [{"resolution": "1080p", "preset": "high", "suffix": ".1080p"}]
+    original_file: dict = None # Dict: {"action": "keep", "move_path": "/backup"}
+
     # Automation settings
     auto_scan_interval: int = 0  # Interval in minutes, 0 = disabled
     auto_squish_enabled: bool = False # Enable auto-transcode after scan
@@ -51,6 +55,10 @@ class Config:
             self.enabled_libraries = {}
         if self.auth_users is None:
             self.auth_users = {}
+        if self.versions is None:
+            self.versions = []
+        if self.original_file is None:
+            self.original_file = {"action": "keep"}
 
 
 def is_first_run(config_path: str = None) -> bool:
@@ -226,6 +234,8 @@ def load_config(config_path: str = None) -> Config:
         auto_scan_interval=config_data.get("auto_scan_interval", 0),
         auto_squish_enabled=config_data.get("auto_squish_enabled", False),
         auto_squish_preset=config_data.get("auto_squish_preset"),
+        versions=config_data.get("versions", []),
+        original_file=config_data.get("original_file", {"action": "keep"}),
     )
 
 
@@ -266,6 +276,8 @@ def save_config(config: Config, config_path: str = None) -> None:
         "auto_scan_interval": config.auto_scan_interval,
         "auto_squish_enabled": config.auto_squish_enabled,
         "auto_squish_preset": config.auto_squish_preset,
+        "versions": config.versions,
+        "original_file": config.original_file,
     }
 
     # Only include one source configuration

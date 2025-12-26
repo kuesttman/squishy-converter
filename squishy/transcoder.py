@@ -93,24 +93,55 @@ def apply_output_path_mapping(path: str) -> str:
     return path
 
 
-def create_job(media_item: MediaItem, preset_name: str) -> TranscodeJob:
+def calculate_output_path(media_item: MediaItem, preset_name: str, suffix: str = None) -> str:
+    """Calculate the output path for a job."""
+    config = load_config()
+    preset = config.presets.get(preset_name, {})
+    container = preset.get('container', '.mp4')
+    
+    filename = os.path.basename(media_item.path)
+    name, ext = os.path.splitext(filename)
+    
+    if suffix:
+        # e.g. "Movie" + ".1080p" + ".mp4"
+        output_filename = f"{name}{suffix}{container}"
+    else:
+        # e.g. "Movie" + "-high" + ".mp4"
+        output_filename = f"{name}-{preset_name}{container}"
+        
+    output_dir = config.transcode_path
+    if config.output_to_source:
+        output_dir = os.path.dirname(media_item.path)
+        
+    return os.path.join(output_dir, output_filename)
+
+
+
+def create_job(media_item: MediaItem, preset_name: str, suffix: str = None) -> TranscodeJob:
     """Create a new transcoding job."""
     # Ensure media_item is attached to session or exists in DB
     existing_media = MediaItem.query.get(media_item.id)
     if not existing_media:
         db.session.add(media_item)
     
+    # Calculate output path immediately
+    output_path = calculate_output_path(media_item, preset_name, suffix)
+    
+    # Extract filename for logging
+    output_filename = os.path.basename(output_path)
+
     job_id = str(uuid.uuid4())
     job = TranscodeJob(
         id=job_id,
         media_id=media_item.id,
         preset_name=preset_name,
+        output_path=output_path, # Provide pre-calculated path
         status="pending",
     )
     
     db.session.add(job)
     db.session.commit()
-    logger.debug(f"Created job with id={job_id}")
+    logger.debug(f"Created job with id={job_id} output={output_filename}")
     return job
 
 
@@ -222,6 +253,55 @@ def process_job_queue():
         logger.error(f"Error processing job queue: {e}")
 
 
+def _handle_original_file(media_item: MediaItem):
+    """Handle the original file after all jobs are complete."""
+    config = load_config()
+    original_config = config.original_file or {}
+    action = original_config.get("action", "keep")
+    
+    if action == "keep":
+        return
+        
+    # Check if there are any other PENDING or PROCESSING jobs for this media
+    # We only act if ALL jobs are complete
+    remaining_jobs = TranscodeJob.query.filter(
+        TranscodeJob.media_id == media_item.id,
+        TranscodeJob.status.in_(["pending", "processing"])
+    ).count()
+    
+    if remaining_jobs > 0:
+        logger.debug(f"Skipping original file action for {media_item.title}: {remaining_jobs} jobs remaining")
+        return
+
+    logger.info(f"All jobs complete for {media_item.title}. Performing original file action: {action}")
+    
+    try:
+        if action == "delete":
+            if os.path.exists(media_item.path):
+                os.remove(media_item.path)
+                logger.info(f"Deleted original file: {media_item.path}")
+                
+        elif action == "move":
+            move_path = original_config.get("move_path")
+            if move_path and os.path.exists(media_item.path):
+                # Apply mapping just in case, though usually config paths are internal
+                target_dir = apply_output_path_mapping(move_path) 
+                os.makedirs(target_dir, exist_ok=True)
+                
+                filename = os.path.basename(media_item.path)
+                target_path = os.path.join(target_dir, filename)
+                
+                shutil.move(media_item.path, target_path)
+                logger.info(f"Moved original file to: {target_path}")
+                
+                # Update media path in DB (optional, but good for consistency)
+                media_item.path = target_path
+                db.session.commit()
+                
+    except Exception as e:
+        logger.error(f"Failed to perform original file action ({action}): {e}")
+
+
 def _run_job_logic(app, job_id, output_dir):
     """Actual transcoding logic running in a thread."""
     with app.app_context():
@@ -240,18 +320,13 @@ def _run_job_logic(app, job_id, output_dir):
             job.started_at = datetime.datetime.utcnow()
             db.session.commit()
             
-            # Determine Output Path
-            filename = os.path.basename(media_item.path)
-            name, ext = os.path.splitext(filename)
+            # Output Path is now pre-calculated in create_job
+            output_path = job.output_path
             
-            # Preset info
-            preset = config.presets.get(preset_name, {})
-            container = preset.get('container', '.mp4')
-            
-            output_filename = f"{name}-{preset_name}{container}"
-            output_path = os.path.join(output_dir, output_filename)
-            
-            job.output_path = output_path
+            # Fallback if null (for legacy jobs)
+            if not output_path:
+                output_path = calculate_output_path(media_item, preset_name)
+                job.output_path = output_path
             
             # Get duration from media info
             try:
@@ -262,6 +337,9 @@ def _run_job_logic(app, job_id, output_dir):
                 logger.warning(f"Could not get duration for {media_item.path}: {e}")
             
             db.session.commit()
+            
+            # Preset data logic
+            preset = config.presets.get(preset_name, {})
 
             # Progress Callback
             def progress_callback(line, progress):
@@ -295,12 +373,13 @@ def _run_job_logic(app, job_id, output_dir):
             db.session.commit()
             
             # Notify media server to re-scan
-            # We do this asynchronously to not block the next job? 
-            # Ideally yes, but the function uses simple requests call, so it's fast enough.
             try:
                 notify_media_server(config)
             except Exception as notify_err:
                 logger.error(f"Failed to notify media server: {notify_err}")
+                
+            # Handle Original File (Multi-Version logic)
+            _handle_original_file(media_item)
             
             # Trigger next job
             process_job_queue()

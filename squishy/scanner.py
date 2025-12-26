@@ -249,23 +249,9 @@ class PlexScanner(MediaServerScanner):
                 if "thumb" in movie_item
                 else None,
                 # Use art or backdrop for thumbnail if available, fallback to poster/thumb
-                thumbnail_url=f"{self.url}{movie_item.get('art')}?X-Plex-Token={self.token}"
-                if "art" in movie_item
-                else (
-                    f"{self.url}{movie_item.get('thumb')}?X-Plex-Token={self.token}"
-                    if "thumb" in movie_item
-                    else None
-                ),
+                
                 # Add additional metadata
                 overview=movie_item.get("summary"),
-                tagline=movie_item.get("tagline"),
-                genres=genres,
-                directors=directors,
-                actors=actors,
-                release_date=movie_item.get("originallyAvailableAt"),
-                rating=movie_item.get("rating"),
-                content_rating=movie_item.get("contentRating"),
-                studio=movie_item.get("studio"),
             )
 
             return movie
@@ -333,14 +319,6 @@ class PlexScanner(MediaServerScanner):
                 if "thumb" in show_item
                 else None,
                 overview=show_item.get("summary"),
-                tagline=show_item.get("tagline"),
-                genres=genres,
-                creators=creators,
-                actors=actors,
-                first_air_date=show_item.get("originallyAvailableAt"),
-                rating=show_item.get("rating"),
-                content_rating=show_item.get("contentRating"),
-                studio=show_item.get("studio"),
             )
 
             return (show_key, show)
@@ -395,17 +373,9 @@ class PlexScanner(MediaServerScanner):
                     else None,
                     # Use thumb as thumbnail for episodes (it's the episode screenshot)
                     # Fall back to art if thumb is missing
-                    thumbnail_url=f"{self.url}{episode_item.get('thumb')}?X-Plex-Token={self.token}"
-                    if "thumb" in episode_item
-                    else (
-                        f"{self.url}{episode_item.get('art')}?X-Plex-Token={self.token}"
-                        if "art" in episode_item
-                        else None
-                    ),
+                    
                     # Add episode details
                     overview=episode_item.get("summary"),
-                    air_date=episode_item.get("originallyAvailableAt"),
-                    rating=episode_item.get("rating"),
                 )
 
                 return episode
@@ -669,6 +639,7 @@ class PlexScanner(MediaServerScanner):
                 f"{self.url}/library/sections", headers=self.get_headers()
             )
             if response.status_code == 200:
+                response.encoding = 'utf-8'  # Force UTF-8 encoding
                 data = response.json()
                 sections = data.get("MediaContainer", {}).get("Directory", [])
 
@@ -779,6 +750,7 @@ class JellyfinScanner(MediaServerScanner):
             )
 
             if response.status_code == 200:
+                response.encoding = 'utf-8'  # Force UTF-8 encoding
                 data = response.json()
                 items = data.get("Items", [])
                 movie_items.extend(items)
@@ -802,9 +774,14 @@ class JellyfinScanner(MediaServerScanner):
         for item in movie_items:
             if "Path" in item:
                 media_id = item.get("Id") or str(uuid.uuid4())
+                original_path = item["Path"]
 
                 # Apply path mapping to convert media server path to local path
-                mapped_path = apply_path_mapping(item["Path"])
+                mapped_path = apply_path_mapping(original_path)
+                
+                logging.info(f"Processing movie: {item.get('Name', 'Unknown')}")
+                logging.debug(f"  Original path: {original_path}")
+                logging.debug(f"  Mapped path: {mapped_path}")
 
                 # Only add if the path exists
                 if mapped_path and self.path_exists(mapped_path):
@@ -848,17 +825,7 @@ class JellyfinScanner(MediaServerScanner):
                         path=mapped_path,
                         year=item.get("ProductionYear"),
                         poster_url=f"{self.url.rstrip('/')}/Items/{item['Id']}/Images/Primary?API_KEY={self.token}",
-                        # Use Backdrop for thumbnail - it's typically a landscape image that works well as thumbnail
-                        thumbnail_url=f"{self.url.rstrip('/')}/Items/{item['Id']}/Images/Backdrop?API_KEY={self.token}",
                         overview=item.get("Overview"),
-                        tagline=tagline,
-                        genres=genres,
-                        directors=directors,
-                        actors=actors[:5],  # Limit to top 5 actors
-                        release_date=item.get("PremiereDate"),
-                        rating=item.get("CommunityRating"),
-                        content_rating=item.get("OfficialRating"),
-                        studio=studio,
                     )
 
                     movies.append(movie)
@@ -956,14 +923,6 @@ class JellyfinScanner(MediaServerScanner):
                 year=item.get("ProductionYear"),
                 poster_url=f"{self.url.rstrip('/')}/Items/{series_id}/Images/Primary?API_KEY={self.token}",
                 overview=item.get("Overview"),
-                tagline=tagline,
-                genres=genres,
-                creators=creators,
-                actors=actors[:5],  # Limit to top 5 actors
-                first_air_date=item.get("PremiereDate"),
-                rating=item.get("CommunityRating"),
-                content_rating=item.get("OfficialRating"),
-                studio=studio,
             )
 
             self.add_show_to_collection(show_id, shows_by_id[series_id])
@@ -1045,10 +1004,8 @@ class JellyfinScanner(MediaServerScanner):
                     episode_number=episode_num,
                     # For episodes, the primary image is actually a thumbnail/screenshot
                     poster_url=f"{self.url.rstrip('/')}/Items/{item['Id']}/Images/Primary?API_KEY={self.token}",
-                    # For episodes in Jellyfin, Primary also contains the landscape artwork
-                    thumbnail_url=f"{self.url.rstrip('/')}/Items/{item['Id']}/Images/Primary?API_KEY={self.token}",
+                    
                     overview=item.get("Overview"),
-                    air_date=item.get("PremiereDate"),
                 )
 
                 # Add to TV show

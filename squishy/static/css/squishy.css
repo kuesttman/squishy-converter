@@ -394,10 +394,12 @@ input[type="number"],
 input[type="password"] {
   width: 100%;
   padding: 0.5rem;
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 0.9rem;
+  background-color: var(--input-bg);
+  color: var(--text-color);
 }
 
 .form-group textarea {
@@ -570,10 +572,11 @@ input:checked+.toggle-slider:before {
 
 .card {
   padding: 1.5rem;
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
+  color: var(--text-color);
 }
 
 .card h3 {
@@ -601,11 +604,12 @@ td.align-right .action-buttons {
 table {
   width: 100%;
   border-collapse: collapse;
-  background-color: white;
+  background-color: var(--card-bg);
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   margin-bottom: 2rem;
+  color: var(--text-color);
 }
 
 /* Responsive table wrapper */
@@ -633,7 +637,7 @@ th,
 td {
   padding: 1rem;
   text-align: left;
-  border-bottom: 1px solid #ddd;
+  border-bottom: 1px solid var(--border-color);
 }
 
 th.align-right,

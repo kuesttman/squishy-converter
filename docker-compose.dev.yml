@@ -9,7 +9,7 @@ services:
     volumes:
       # Map source code for development (hot-reload where supported, or easy restart)
       - ./:/app
-      - ./config:/app/config
+      - ./config:/config
       # Media volumes (using user's E: drive as per their jellyfin example)
       - E:\Media\Filmes:/media
     environment:
